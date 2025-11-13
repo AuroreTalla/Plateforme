@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,40 +27,40 @@ public class UsersService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
 
+    @Transactional
     public void inscription(Users users) {
         users.setPassword(this.passwordEncoder.encode(users.getPassword()));
         users = this.usersRepository.save(users);
         this.emailVerificationService.validation(users);
     }
 
+    @Transactional
     public Users activation(ActivationDTO activationDTO) {
-        // 🔹 Récupération du code et de l'email côté backend
         String code = activationDTO.getCode();
         String email = activationDTO.getEmail();
 
         if (code == null || code.isBlank()) {
-            throw new RuntimeException("Code manquant");
+            throw new IllegalArgumentException("Code manquant");
         }
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("Email manquant");
+            throw new IllegalArgumentException("Email manquant");
         }
 
-        // 🔹 Lire la vérification email par code et email
         EmailVerification emailVerification = this.emailVerificationService.lireEnFonctionDuCode(code);
 
         if (!emailVerification.getUsers().getEmail().equals(email)) {
-            throw new RuntimeException("Email et code ne correspondent pas");
+            throw new IllegalArgumentException("Email et code ne correspondent pas");
         }
 
         if (Instant.now().isAfter(emailVerification.getDateExpiration())) {
-            throw new RuntimeException("Votre code est expiré");
+            throw new IllegalArgumentException("Votre code est expiré");
         }
 
-        // 🔹 Activation du compte
         Users userActive = this.usersRepository.findById(emailVerification.getUsers().getId())
-                .orElseThrow(() -> new RuntimeException("Utilisateur inconnu"));
+                .orElseThrow(() -> new EntityNotFoundException("Utilisateur inconnu"));
 
         userActive.setEmailVerifie(true);
+        emailVerificationService.deleteVerification(emailVerification);
         return this.usersRepository.save(userActive);
     }
 

@@ -19,9 +19,6 @@ public interface GroupeRepository extends JpaRepository<Groupe, Long> {
     @Query("SELECT m FROM Message m WHERE m.groupe.nom = :nom ORDER BY m.dateEnvoie ASC")
     List<Message> findMessagesByGroupeNom(@Param("nom") String nom, Pageable pageable);
 
-    @Query("SELECT DISTINCT g FROM Groupe g LEFT JOIN FETCH g.membres")
-    List<Groupe> findAllWithMembres();
-
     @EntityGraph(attributePaths = "membres")
     List<Groupe> findAll();
 }

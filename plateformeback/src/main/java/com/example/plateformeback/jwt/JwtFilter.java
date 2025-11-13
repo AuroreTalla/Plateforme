@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+
 @Slf4j
 @AllArgsConstructor
 @Component
@@ -25,6 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UsersService usersService;
     private final JwtService jwtService;
     private final JwtCookieService jwtCookieService;
+    private final JwtRepository jwtRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -40,6 +43,15 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             String email = jwtService.extractUsername(token);
             Users user = usersService.getUserByEmail(email);
+
+            String hashedToken = sha256Hex(token);
+            Optional<Jwt> jwtOpt = jwtRepository.findByValeurAndDesactiveAndExpire(hashedToken, false, false);
+
+            if (jwtOpt.isEmpty()) {
+                log.warn("Token révoqué ou invalide pour {}", email);
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             if (jwtService.validateToken(token, user)) {
                 authenticateUser(user);

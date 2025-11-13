@@ -25,7 +25,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 @RequestMapping(path = "users")
 public class UsersControlleur {
@@ -40,7 +39,7 @@ public class UsersControlleur {
     // -------------------------------
     @PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
     public ResponseEntity<String> inscription(@Valid @RequestBody Users users) {
-        log.info("Inscription appelée avec : {}", users);
+        log.info("Inscription pour email: {}", users.getEmail());
         usersService.inscription(users);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Utilisateur créé avec succès. Vérifiez vos emails.");
@@ -52,7 +51,7 @@ public class UsersControlleur {
     @Transactional
     @PostMapping("activation")
     public ResponseEntity<?> activation(@RequestBody ActivationDTO activationDTO) {
-        log.info("Activation request : {}", activationDTO);
+        log.info("Activation request pour: {}", activationDTO.getEmail());
         Users userActive = usersService.activation(activationDTO);
         return ResponseEntity.ok(UserDTO.fromEntity(userActive));
     }
@@ -78,8 +77,7 @@ public class UsersControlleur {
             jwtCookieService.addTokenCookies(response, tokens);
 
             return ResponseEntity.ok(Map.of(
-                    "user", UserDTO.fromEntity(user),
-                    "refresh", tokens.get(JwtService.REFRESH)
+                    "user", UserDTO.fromEntity(user)
             ));
 
         } catch (BadCredentialsException e) {
@@ -94,7 +92,7 @@ public class UsersControlleur {
     // -------------------------------
     // 🔹 Refresh Token
     // -------------------------------
-    @PostMapping("/refresh-token")
+    @PostMapping("refresh-token")
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return jwtCookieService.getOptionalTokenFromCookies(request, JwtService.REFRESH)
                 .map(refreshToken -> {

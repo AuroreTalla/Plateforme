@@ -26,7 +26,10 @@ public class ConfigurationApp {
     private final JwtFilter jwtFilter;
     private final UserDetailsService userDetailsService;
 
-    public ConfigurationApp(BCryptPasswordEncoder bCryptPasswordEncoder, JwtFilter jwtFilter, UserDetailsService userDetailsService, AuthentificationConfig authentificationConfig) {
+    public ConfigurationApp(BCryptPasswordEncoder bCryptPasswordEncoder,
+                            JwtFilter jwtFilter,
+                            UserDetailsService userDetailsService,
+                            AuthentificationConfig authentificationConfig) {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
@@ -37,18 +40,16 @@ public class ConfigurationApp {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {}) // ✅ Active CORS ici
+                .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/groupes/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/app/**").permitAll()
-
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(httpSecuritySessionManagementConfigurer ->
-                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(this.jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -57,10 +58,13 @@ public class ConfigurationApp {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend autorisé
+
+        // ✅ Accepte localhost:5173 (React) ET tous les autres origins (HTML local)
+        configuration.setAllowedOriginPatterns(List.of("*"));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept")); // Spécifie les headers autorisés
-        configuration.setAllowCredentials(true); // Permet l'envoi des cookies ou Authorization
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

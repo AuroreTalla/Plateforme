@@ -3,6 +3,7 @@ package com.example.plateformeback.jwt;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -11,6 +12,12 @@ import java.util.Optional;
 
 @Service
 public class JwtCookieService {
+
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.samesite:Lax}")
+    private String cookieSameSite;
 
     public String getTokenFromCookies(HttpServletRequest request, String name) {
         if (request.getCookies() == null) return null;
@@ -25,33 +32,21 @@ public class JwtCookieService {
         return Optional.ofNullable(getTokenFromCookies(request, name));
     }
 
-    /**
-     * Ajoute deux cookies : le JWT d'accès (30 min) et le refresh token (7 jours)
-     */
     public void addTokenCookies(HttpServletResponse response, Map<String, String> tokens) {
-        addCookie(response, JwtService.BEARER, tokens.get(JwtService.BEARER), 30 * 60); // 30 min
-        addCookie(response, JwtService.REFRESH, tokens.get(JwtService.REFRESH), 7 * 24 * 60 * 60); // 7 jours
+        addCookie(response, JwtService.BEARER, tokens.get(JwtService.BEARER), 30 * 60);
+        addCookie(response, JwtService.REFRESH, tokens.get(JwtService.REFRESH), 7 * 24 * 60 * 60);
     }
 
-    /**
-     * Ajoute un cookie HTTPOnly, compatible cross-origin
-     */
     private void addCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
         Cookie cookie = new Cookie(name, value != null ? value : "");
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // ⚠️ à passer à true en production (https)
+        cookie.setSecure(cookieSecure);
         cookie.setPath("/");
         cookie.setMaxAge(maxAgeSeconds);
-
-        // ✅ Compatibilité CORS complète
-        cookie.setAttribute("SameSite", "None");
-
+        cookie.setAttribute("SameSite", cookieSameSite);
         response.addCookie(cookie);
     }
 
-    /**
-     * Supprime les cookies JWT et Refresh
-     */
     public void clearTokens(HttpServletResponse response) {
         addCookie(response, JwtService.BEARER, "", 0);
         addCookie(response, JwtService.REFRESH, "", 0);

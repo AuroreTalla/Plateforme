@@ -17,43 +17,28 @@ import java.nio.charset.StandardCharsets;
 @Table(name = "refresh_token")
 public class RefreshToken {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    private boolean expire;
+        private boolean expire;
 
-    @Column(name = "valeur", nullable = false, unique = true, columnDefinition = "TEXT")
-    private String valeur;
+        @Column(name = "valeur", nullable = false, unique = true, length = 512)
+        private String valeur;
 
-    private Instant creation;
-    private Instant expiration;
+        private Instant creation;
+        private Instant expiration;
 
-    public boolean isExpired() {
-        return expiration != null && Instant.now().isAfter(expiration);
-    }
-
-    public boolean isActive() {
-        return !expire && !isExpired();
-    }
-
-    public void setValeur(String valeur) {
-        this.valeur = sha256Hex(valeur);
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users users;
-
-    private static String sha256Hex(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder(2 * hash.length);
-            for (byte b : hash) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+        public boolean isExpired() {
+            return expiration != null && Instant.now().isAfter(expiration);
         }
-    }
+
+        public boolean isActive() {
+            return !expire && !isExpired();
+        }
+
+        @ManyToOne
+        @JoinColumn(name = "user_id", nullable = false)
+        private Users users;
+
 }

@@ -13,7 +13,7 @@ public record UserDTO(
         String email,
         TypeStatut statut,
         boolean demandeProfesseur,
-        LocalDate dateInscription,
+        LocalDateTime dateInscription,
         boolean emailVerifie,
         LocalDateTime lastSeen
 ) {

@@ -50,7 +50,7 @@ public class Users implements UserDetails {
     private boolean demandeProfesseur;
 
     @Column(name = "date_inscription")
-    private LocalDate dateInscription;
+    private LocalDateTime dateInscription;
 
     @Column(name = "email_verifie")
     private boolean emailVerifie;
@@ -63,7 +63,7 @@ public class Users implements UserDetails {
 
     @PrePersist
     public void prePersist() {
-        this.dateInscription = LocalDate.now();
+        this.dateInscription = LocalDateTime.now();
         this.lastSeen = LocalDateTime.now();
     }
 

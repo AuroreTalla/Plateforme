@@ -7,18 +7,25 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+
 @Slf4j
 @Service
 public class JwtService {
 
-    public static final String BEARER = "jwt";
+    private final JwtRepository jwtRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    public static final String BEARER = "Bearer";
     public static final String REFRESH = "refresh";
 
     @Value("${jwt.secret}")
@@ -30,25 +37,83 @@ public class JwtService {
     @Value("${jwt.expiration.refresh}")
     private long refreshExpirationMs;
 
-    // -------------------------------
-    // 🔹 Génération des tokens
-    // -------------------------------
+    // ✅ Constructeur manuel (sans injection des @Value)
+    public JwtService(JwtRepository jwtRepository, RefreshTokenRepository refreshTokenRepository) {
+        this.jwtRepository = jwtRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+    }
+
+    @Transactional
     public Map<String, String> generateTokens(Users user) {
+        String accessTokenStr = buildToken(new HashMap<>(), user, jwtExpirationMs);
+        String refreshTokenStr = buildToken(new HashMap<>(), user, refreshExpirationMs);
+
+        // ✅ Hasher AVANT de sauvegarder
+        RefreshToken refreshToken = RefreshToken.builder()
+                .valeur(sha256Hex(refreshTokenStr))  // ✅ Hash manuellement
+                .users(user)
+                .creation(Instant.now())
+                .expiration(Instant.now().plusMillis(refreshExpirationMs))
+                .expire(false)
+                .build();
+        refreshToken = refreshTokenRepository.save(refreshToken);
+
+        Jwt jwt = Jwt.builder()
+                .valeur(sha256Hex(accessTokenStr))  // ✅ Hash manuellement
+                .users(user)
+                .refreshToken(refreshToken)
+                .dateExpiration(Instant.now().plusMillis(jwtExpirationMs))
+                .desactive(false)
+                .expire(false)
+                .build();
+        jwtRepository.save(jwt);
+
         Map<String, String> tokens = new HashMap<>();
-        tokens.put(BEARER, buildToken(new HashMap<>(), user, jwtExpirationMs));
-        tokens.put(REFRESH, buildToken(new HashMap<>(), user, refreshExpirationMs));
+        tokens.put(BEARER, accessTokenStr);  // ✅ Retourne en clair
+        tokens.put(REFRESH, refreshTokenStr);
         return tokens;
     }
 
-    public Map<String, String> refreshTokens(String refreshToken) {
-        String username = extractUsername(refreshToken);
-        if (isTokenExpired(refreshToken)) {
+    @Transactional
+    public Map<String, String> refreshTokens(String refreshTokenStr) {
+        String username = extractUsername(refreshTokenStr);
+
+        if (isTokenExpired(refreshTokenStr)) {
             throw new RuntimeException("Refresh token expiré");
         }
 
-        Users user = new Users();
-        user.setEmail(username);
-        return generateTokens(user);
+        String hashedRefresh = sha256Hex(refreshTokenStr);
+        RefreshToken refreshToken = refreshTokenRepository.findByValeur(hashedRefresh)
+                .orElseThrow(() -> new RuntimeException("Refresh token invalide"));
+
+        if (!refreshToken.isActive()) {
+            throw new RuntimeException("Refresh token expiré ou révoqué");
+        }
+
+        jwtRepository.findByRefreshTokenValeur(hashedRefresh)
+                .ifPresent(oldJwt -> {
+                    oldJwt.setDesactive(true);
+                    oldJwt.setExpire(true);
+                    jwtRepository.save(oldJwt);
+                });
+
+        Users user = refreshToken.getUsers();
+        String newAccessToken = buildToken(new HashMap<>(), user, jwtExpirationMs);
+
+        Jwt newJwt = Jwt.builder()
+                .valeur(sha256Hex(newAccessToken))  // ✅ Hash manuellement
+                .users(user)
+                .refreshToken(refreshToken)
+                .dateExpiration(Instant.now().plusMillis(jwtExpirationMs))
+                .desactive(false)
+                .expire(false)
+                .build();
+        jwtRepository.save(newJwt);
+
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put(BEARER, newAccessToken);
+        tokens.put(REFRESH, refreshTokenStr);
+        return tokens;
     }
 
     private String buildToken(Map<String, Object> extraClaims, Users user, long expiration) {
@@ -66,9 +131,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // -------------------------------
-    // 🔹 Validation et expiration
-    // -------------------------------
     public boolean validateToken(String token, Users user) {
         try {
             final String username = extractUsername(token);
@@ -111,10 +173,13 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    // -------------------------------
-    // 🔹 Déconnexion
-    // -------------------------------
+    @Transactional
     public void deconnexion(Users user) {
+        jwtRepository.findByUsersEmail(user.getEmail()).forEach(jwt -> {
+            jwt.setDesactive(true);
+            jwt.setExpire(true);
+            jwtRepository.save(jwt);
+        });
         log.info("Utilisateur {} déconnecté", user.getEmail());
     }
 }

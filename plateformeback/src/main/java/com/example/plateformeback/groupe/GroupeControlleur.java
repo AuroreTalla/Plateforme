@@ -8,10 +8,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+import java.util.Map;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping(path = "groupes")
@@ -27,11 +29,13 @@ public class GroupeControlleur {
     }
 
     // Rejoindre un groupe
-    @PostMapping("/{nom}/join")
-    public GroupeDTO joinGroupe(@PathVariable String nom) {
-        Users currentUser = usersService.getCurrentUser();
-        Groupe groupe = groupeService.joinGroupe(nom, currentUser);
-        return GroupeDTO.fromEntity(groupe);
+    @PostMapping("/join")
+    public ResponseEntity<?> joinGroup(@RequestBody Map<String, String> payload) {
+        Users currentUser = usersService.getCurrentUser();  // ✅ Déjà authentifié
+        String groupeNom = payload.get("nom");  // ou "id" selon votre besoin
+
+        Groupe groupe = groupeService.joinGroupe(groupeNom, currentUser);
+        return ResponseEntity.ok(GroupeDTO.fromEntity(groupe, currentUser));
     }
 
 

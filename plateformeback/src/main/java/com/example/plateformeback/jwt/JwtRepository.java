@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface JwtRepository extends CrudRepository<Jwt, Integer> {
+public interface JwtRepository extends CrudRepository<Jwt, Long> {  // ✅ Integer → Long
 
     Optional<Jwt> findByValeurAndDesactiveAndExpire(String valeur, boolean desactive, boolean expire);
 

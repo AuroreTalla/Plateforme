@@ -5,16 +5,16 @@ import com.example.plateformeback.groupe.GroupeService;
 import com.example.plateformeback.user.Users;
 import com.example.plateformeback.user.UsersService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.Map;
 
+@Slf4j
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @Controller
 public class MessageControlleur {
 
@@ -23,34 +23,30 @@ public class MessageControlleur {
     private final MessageService messageService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/message")
-    @SendTo("/topic/public")
-    public MessageDTO receiveMessage(@Payload Message message) {
-        return MessageDTO.fromEntity(message);
-    }
-
-    //envoie de message
     @MessageMapping("/sendMessage/{nom}")
     public void sendMessage(@Payload Message message,
                             @DestinationVariable String nom,
                             Principal principal) {
+        try {
+            Groupe groupe = groupeService.findByNom(nom);
+            Users sender = usersService.getUserByEmail(principal.getName());
 
-        // Récupération du groupe et de l'utilisateur
-        Groupe groupe = groupeService.findByNom(nom);
-        Users sender = usersService.getUserByEmail(principal.getName());
+            groupeService.checkUserMember(groupe, sender);
 
-        // Vérification membre avant persistance
-        groupeService.checkUserMember(groupe, sender);
+            message.setGroupe(groupe);
+            message.setSender(sender);
 
-        // Définir les infos
-        message.setGroupe(groupe);
-        message.setSender(sender);
+            MessageDTO messageDTO = messageService.sendMessage(message);
 
-        // Persister et récupérer DTO
-        MessageDTO messageDTO = messageService.sendMessage(message);
+            messagingTemplate.convertAndSend("/topic/groupe/" + nom, messageDTO);
 
-        // Diffuser le DTO
-        messagingTemplate.convertAndSend("/topic/groupe/" + nom, messageDTO);
+        } catch (Exception e) {
+            log.error("Erreur envoi message: {}", e.getMessage());
+            messagingTemplate.convertAndSendToUser(
+                    principal.getName(),
+                    "/queue/errors",
+                    Map.of("error", e.getMessage())
+            );
+        }
     }
-
 }
