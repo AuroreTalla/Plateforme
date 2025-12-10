@@ -2,6 +2,7 @@ package com.example.plateformeback.user;
 
 import com.example.plateformeback.enums.TypeStatut;
 import com.example.plateformeback.verificationEmail.EmailVerificationService;
+import com.example.plateformeback.verificationEmail.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ public class ProfService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final NotificationService notificationService;
 
     // ✅ Récupérer tous les utilisateurs avec demande professeur en attente
     public List<Users> getUsersAvecDemandeProfesseur() {
@@ -68,20 +70,8 @@ public class ProfService {
         }
     }
 
-    // ✅ Envoyer email de validation
-    public void envoyerEmailValidationProfesseur(Users user) {
-        String sujet = "Demande de statut professeur validée";
-        String message = String.format(
-                "Bonjour %s,\n\n" +
-                        "Votre demande de statut professeur a été validée par l'administrateur.\n" +
-                        "Vous pouvez maintenant accéder à toutes les fonctionnalités réservées aux professeurs.\n\n" +
-                        "Cordialement,\nL'équipe",
-                user.getName()
-        );
-
-        emailService.envoyerEmail(user.getEmail(), sujet, message);
-    }
-}
-
 
 }
+
+
+
