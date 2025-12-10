@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+*/
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Utilisez @layer components pour créer des classes réutilisables */
+@layer components {
+  .login-input-design {
+    @apply w-full h-full rounded-full text-base outline-none 
+      pl-12 pr-4 bg-gray-50 border-2 border-gray-300
+      transition-all duration-300
+      focus:border-blue-800 focus:bg-white;
+  }
+
+  .login-input-design:valid {
+    @apply border-blue-800 bg-white;
+  }
+
+  .login-label-design {
+    @apply absolute left-12 top-1/2 -translate-y-1/2 text-gray-500 text-[15px] 
+      pointer-events-none transition-all duration-300;
+  }
+
+  .login-icon-design {
+    @apply absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none z-10;
+  }
+
+  .login-button-design {
+    @apply w-full bg-blue-800 text-white py-4 rounded-full 
+      hover:shadow-xl hover:scale-105 transition-all duration-300
+      font-semibold text-base mt-8;
+  }
+}

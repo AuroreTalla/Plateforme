@@ -1,7 +1,7 @@
 import { useEffect, useContext } from "react";
 import { Box } from "@mui/material";
 import { Outlet, useNavigate } from "react-router-dom";
-import { AuthContext } from "../Inscription/AuthContext";
+import { AuthContext } from "../../Composants/Authentification/AuthContext";
 import Sidebar from "../../Composants/SideBar.jsx";
 
 export default function Dashboard() {

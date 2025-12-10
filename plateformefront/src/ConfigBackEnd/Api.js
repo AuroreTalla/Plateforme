@@ -9,6 +9,22 @@ export const api = axios.create({
   withCredentials: true, // ✅ Les cookies JWT sont automatiquement envoyés
 });
 
+// ✅ NOUVEAU : Intercepteur pour ajouter le token depuis localStorage si disponible
+api.interceptors.request.use(
+  (config) => {
+    // Si un token existe dans localStorage, l'ajouter au header
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+      console.log('🔑 Token ajouté au header');
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -40,7 +56,6 @@ api.interceptors.response.use(
 
     // 🔄 Gestion du 401 (token expiré)
     if (error.response?.status === 401 && !originalRequest._retry) {
-      
       // Si un refresh est déjà en cours, mettre en file d'attente
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -57,15 +72,18 @@ api.interceptors.response.use(
 
       try {
         // ✅ Appeler le refresh endpoint
-        // Le backend récupère automatiquement le refresh_jwt du cookie
-        // et renvoie un nouveau jwt dans un cookie
-        await api.post("/users/refresh-token");
+        const response = await api.post("/users/refresh-token");
+        
+        // ✅ Si le backend renvoie un nouveau token en JSON, le sauvegarder
+        if (response.data?.token) {
+          localStorage.setItem('token', response.data.token);
+          console.log('✅ Token rafraîchi et sauvegardé');
+        }
         
         isRefreshing = false;
         processQueue(null);
-        
+
         // ✅ Réessayer la requête originale
-        // Le nouveau JWT est déjà dans les cookies
         return api(originalRequest);
         
       } catch (refreshError) {
@@ -74,6 +92,8 @@ api.interceptors.response.use(
         
         // ❌ Le refresh a échoué → déconnecter l'utilisateur
         localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("token");
+        localStorage.removeItem("currentUser");
         
         // Rediriger vers la page de connexion
         if (window.location.pathname !== "/") {

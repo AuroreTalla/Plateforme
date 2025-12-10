@@ -5,5 +5,6 @@ export const AuthContext = createContext({
   setCurrentUser: () => {},
   isAuthenticated: false,
   loading: true,
+  login: async () => {},  // ✅ Ajouté
   logout: () => {},
 });
