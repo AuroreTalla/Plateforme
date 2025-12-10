@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.Map;
 
 @Slf4j
@@ -23,30 +23,54 @@ public class MessageControlleur {
     private final MessageService messageService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/sendMessage/{nom}")
-    public void sendMessage(@Payload Message message,
-                            @DestinationVariable String nom,
-                            Principal principal) {
+    @Transactional
+    @MessageMapping("/sendMessage/{groupeNom}")
+    public void sendMessage(
+            @DestinationVariable String groupeNom,
+            @Payload Map<String, String> payload
+    ) {
         try {
-            Groupe groupe = groupeService.findByNom(nom);
-            Users sender = usersService.getUserByEmail(principal.getName());
+            log.info("📩 Message reçu pour le groupe: {}", groupeNom);
+            log.info("📦 Payload complet: {}", payload);
 
-            groupeService.checkUserMember(groupe, sender);
+            // ✅ CORRECTION : chercher "userEmail" au lieu de "email"
+            String userEmail = payload.get("userEmail");
 
+            if (userEmail == null || userEmail.isEmpty()) {
+                log.error("❌ Email utilisateur manquant. Payload: {}", payload);
+                return;
+            }
+
+            log.info("👤 Utilisateur: {}", userEmail);
+
+            // Récupérer l'utilisateur par email
+            Users currentUser = usersService.getUserByEmail(userEmail);
+
+            // Récupérer le groupe
+            Groupe groupe = groupeService.findByNom(groupeNom);
+
+            // Vérifier que l'utilisateur est membre
+            groupeService.checkUserMember(groupe, currentUser);
+
+            // Créer et sauvegarder le message
+            Message message = new Message();
+            message.setContent(payload.get("content"));
+            message.setSender(currentUser);
             message.setGroupe(groupe);
-            message.setSender(sender);
 
-            MessageDTO messageDTO = messageService.sendMessage(message);
+            MessageDTO savedMessage = messageService.sendMessage(message);
+            log.info("✅ Message sauvegardé: ID={}", savedMessage.id());
 
-            messagingTemplate.convertAndSend("/topic/groupe/" + nom, messageDTO);
+            // Diffuser à tous les abonnés du groupe
+            messagingTemplate.convertAndSend(
+                    "/topic/groupe/" + groupeNom,
+                    savedMessage
+            );
+
+            log.info("📡 Message diffusé via WebSocket");
 
         } catch (Exception e) {
-            log.error("Erreur envoi message: {}", e.getMessage());
-            messagingTemplate.convertAndSendToUser(
-                    principal.getName(),
-                    "/queue/errors",
-                    Map.of("error", e.getMessage())
-            );
+            log.error("❌ Erreur envoi message: {}", e.getMessage(), e);
         }
     }
 }

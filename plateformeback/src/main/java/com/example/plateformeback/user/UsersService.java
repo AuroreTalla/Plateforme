@@ -1,6 +1,7 @@
 package com.example.plateformeback.user;
 
 import com.example.plateformeback.dto.ActivationDTO;
+import com.example.plateformeback.enums.TypeStatut;
 import com.example.plateformeback.verificationEmail.EmailVerification;
 import com.example.plateformeback.verificationEmail.EmailVerificationService;
 import jakarta.persistence.EntityNotFoundException;

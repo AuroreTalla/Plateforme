@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,13 +38,51 @@ public class UsersControlleur {
     // -------------------------------
     // 🔹 Inscription
     // -------------------------------
-    @PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
+    /*@PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
     public ResponseEntity<String> inscription(@Valid @RequestBody Users users) {
         log.info("Inscription pour email: {}", users.getEmail());
         usersService.inscription(users);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Utilisateur créé avec succès. Vérifiez vos emails.");
+    }*/
+    // UsersControlleur.java - VERSION AMÉLIORÉE
+
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
+    public ResponseEntity<?> inscription(@Valid @RequestBody Users users) {
+        log.info("Inscription pour email: {}", users.getEmail());
+
+        // ✅ Si l'utilisateur veut être PROFESSEUR
+        if ("PROFESSEUR".equals(users.getStatut())) {
+            // On met le statut à ELEVE par défaut
+            users.setStatut("ELEVE");
+            // On marque qu'il a fait une demande de professeur
+            users.setDemandeProfesseur(true);
+
+            usersService.inscription(users);
+
+            // ✅ Envoyer une notification à l'admin (email, webhook, etc.)
+            usersService.notifierAdminDemandeProfesseur(users);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Compte créé avec succès. Votre demande de statut professeur sera examinée par un administrateur.",
+                    "statut", "ELEVE",
+                    "demandeProfesseur", true
+            ));
+        }
+        // ✅ Si l'utilisateur s'inscrit comme ELEVE
+        else {
+            users.setStatut("ELEVE");
+            users.setDemandeProfesseur(false);
+            usersService.inscription(users);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Utilisateur créé avec succès. Vérifiez vos emails.",
+                    "statut", "ELEVE"
+            ));
+        }
     }
+
+
 
     // -------------------------------
     // 🔹 Activation
@@ -73,11 +112,17 @@ public class UsersControlleur {
                         .body(Map.of("message", "Veuillez vérifier votre email avant de vous connecter."));
             }
 
+            // Générer les tokens
             Map<String, String> tokens = jwtService.generateTokens(user);
+
+            // Ajouter dans les cookies
             jwtCookieService.addTokenCookies(response, tokens);
 
+            // ✅ CORRECTION : Renvoyer le token en JSON AUSSI
             return ResponseEntity.ok(Map.of(
-                    "user", UserDTO.fromEntity(user)
+                    "user", UserDTO.fromEntity(user),
+                    "token", tokens.get(JwtService.BEARER),           // ✅ Ajouté
+                    "refreshToken", tokens.get(JwtService.REFRESH)    // ✅ Ajouté
             ));
 
         } catch (BadCredentialsException e) {

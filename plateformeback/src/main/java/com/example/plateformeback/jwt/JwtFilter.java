@@ -34,8 +34,26 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String token = jwtCookieService.getTokenFromCookies(request, JwtService.BEARER);
+        // ✅ 1. Essayer de récupérer le token depuis le header Authorization
+        String token = null;
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            log.info("🔑 Token trouvé dans le header Authorization");
+        }
+
+        // ✅ 2. Si pas dans le header, essayer les cookies
         if (token == null) {
+            token = jwtCookieService.getTokenFromCookies(request, JwtService.BEARER);
+            if (token != null) {
+                log.info("🍪 Token trouvé dans les cookies");
+            }
+        }
+
+        // ✅ 3. Si toujours pas de token, continuer sans authentification
+        if (token == null) {
+            log.debug("⚠️ Aucun token trouvé (header ou cookie)");
             filterChain.doFilter(request, response);
             return;
         }
@@ -48,19 +66,20 @@ public class JwtFilter extends OncePerRequestFilter {
             Optional<Jwt> jwtOpt = jwtRepository.findByValeurAndDesactiveAndExpire(hashedToken, false, false);
 
             if (jwtOpt.isEmpty()) {
-                log.warn("Token révoqué ou invalide pour {}", email);
+                log.warn("❌ Token révoqué ou invalide pour {}", email);
                 filterChain.doFilter(request, response);
                 return;
             }
 
             if (jwtService.validateToken(token, user)) {
                 authenticateUser(user);
+                log.info("✅ Utilisateur authentifié: {}", email);
             } else if (jwtService.isTokenExpired(token)) {
                 refreshJwtIfPossible(request, response, user);
             }
 
         } catch (Exception e) {
-            log.warn("Erreur JWT: {}", e.getMessage());
+            log.warn("⚠️ Erreur JWT: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -81,9 +100,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 Map<String, String> tokens = jwtService.refreshTokens(refreshToken);
                 jwtCookieService.addTokenCookies(response, tokens);
                 authenticateUser(user);
-                log.info("JWT renouvelé automatiquement pour {}", user.getEmail());
+                log.info("🔄 JWT renouvelé automatiquement pour {}", user.getEmail());
             } catch (RuntimeException e) {
-                log.warn("Échec du rafraîchissement du token pour {}", user.getEmail());
+                log.warn("❌ Échec du rafraîchissement du token pour {}", user.getEmail());
             }
         });
     }

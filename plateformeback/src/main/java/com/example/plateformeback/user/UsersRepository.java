@@ -15,4 +15,9 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     boolean existsByName(String name);
 
+    List<Users> findByStatut(String statut);
+
+    // ✅ Nouvelle méthode
+    List<Users> findByDemandeProfesseurTrueAndStatut(String statut);
+
 }
