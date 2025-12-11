@@ -1,13 +1,10 @@
 package com.example.plateformeback.user;
 
-import com.example.plateformeback.jwt.JwtCookieService;
-import com.example.plateformeback.jwt.JwtService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,61 +14,94 @@ import java.util.stream.Collectors;
 @Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping(path = "prof")
+@RequestMapping(path = "admin/professeurs")
 public class ProfControlleur {
 
-    private final UsersService usersService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final JwtCookieService jwtCookieService;
+    private final ProfService profService;
 
-    // -------------------------------
-    // 🔹 ENDPOINTS ADMIN - Gestion des demandes professeurs
-    // -------------------------------
-
-    @GetMapping("/admin/demandes-professeur")
+    /**
+     * Liste toutes les demandes professeur en attente
+     */
+    @GetMapping("/demandes")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getDemandesProfesseur() {
-        List<Users> demandes = usersService.getUsersAvecDemandeProfesseur();
-        List<UserDTO> demandeDTOs = demandes.stream()
-                .map(UserDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(demandeDTOs);
+        try {
+            List<Users> demandes = profService.getUsersAvecDemandeProfesseur();
+            List<UserDTO> demandeDTOs = demandes.stream()
+                    .map(UserDTO::fromEntity)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(Map.of(
+                    "demandes", demandeDTOs,
+                    "total", demandeDTOs.size()
+            ));
+        } catch (Exception e) {
+            log.error("Erreur récupération demandes: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors de la récupération des demandes"));
+        }
     }
 
-    @PostMapping("/admin/valider-professeur/{userId}")
+    /**
+     * Valide un utilisateur comme professeur
+     */
+    @PostMapping("/valider/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> validerProfesseur(@PathVariable Long userId) {
         try {
-            Users user = usersService.validerCommeProfesseur(userId);
-
-            // ✅ Envoyer un email de confirmation à l'utilisateur
-            usersService.envoyerEmailValidationProfesseur(user);
+            Users user = profService.validerCommeProfesseur(userId);
+            profService.envoyerEmailValidationProfesseur(user);
 
             return ResponseEntity.ok(Map.of(
                     "message", "L'utilisateur a été validé comme professeur",
                     "user", UserDTO.fromEntity(user)
             ));
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Erreur validation professeur: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors de la validation"));
         }
     }
 
-    @PostMapping("/admin/refuser-professeur/{userId}")
+    /**
+     * Refuse une demande professeur
+     */
+    @PostMapping("/refuser/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> refuserProfesseur(@PathVariable Long userId, @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> refuserProfesseur(@PathVariable Long userId) {
         try {
-            String raison = body.get("raison");
-            Users user = usersService.refuserDemandeProfesseur(userId, raison);
+            Users user = profService.refuserDemandeProfesseur(userId);
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Demande refusée",
+                    "message", "Demande professeur refusée",
                     "user", UserDTO.fromEntity(user)
             ));
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Erreur refus professeur: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors du refus"));
+        }
+    }
+
+    /**
+     * Compte le nombre de demandes en attente
+     */
+    @GetMapping("/demandes/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> compterDemandes() {
+        try {
+            long count = profService.compterDemandesEnAttente();
+            return ResponseEntity.ok(Map.of("count", count));
+        } catch (Exception e) {
+            log.error("Erreur comptage demandes: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors du comptage"));
         }
     }
 }

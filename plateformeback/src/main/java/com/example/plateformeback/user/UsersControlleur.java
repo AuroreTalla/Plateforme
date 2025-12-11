@@ -2,6 +2,7 @@ package com.example.plateformeback.user;
 
 import com.example.plateformeback.dto.ActivationDTO;
 import com.example.plateformeback.dto.AuthentificationDTO;
+import com.example.plateformeback.enums.TypeStatut;
 import com.example.plateformeback.jwt.JwtCookieService;
 import com.example.plateformeback.jwt.JwtService;
 import jakarta.transaction.Transactional;
@@ -35,54 +36,40 @@ public class UsersControlleur {
     private final JwtService jwtService;
     private final JwtCookieService jwtCookieService;
 
-    // -------------------------------
-    // 🔹 Inscription
-    // -------------------------------
-    /*@PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
-    public ResponseEntity<String> inscription(@Valid @RequestBody Users users) {
-        log.info("Inscription pour email: {}", users.getEmail());
-        usersService.inscription(users);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Utilisateur créé avec succès. Vérifiez vos emails.");
-    }*/
-    // UsersControlleur.java - VERSION AMÉLIORÉE
-
     @PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
     public ResponseEntity<?> inscription(@Valid @RequestBody Users users) {
         log.info("Inscription pour email: {}", users.getEmail());
 
-        // ✅ Si l'utilisateur veut être PROFESSEUR
-        if ("PROFESSEUR".equals(users.getStatut())) {
+        // ✅ CORRIGÉ : Comparer avec l'enum TypeStatut
+        if (TypeStatut.PROFESSEUR.equals(users.getStatut())) {
             // On met le statut à ELEVE par défaut
-            users.setStatut("ELEVE");
+            users.setStatut(TypeStatut.ELEVE);
             // On marque qu'il a fait une demande de professeur
             users.setDemandeProfesseur(true);
 
             usersService.inscription(users);
 
-            // ✅ Envoyer une notification à l'admin (email, webhook, etc.)
+            // ✅ Envoyer une notification à l'admin
             usersService.notifierAdminDemandeProfesseur(users);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "message", "Compte créé avec succès. Votre demande de statut professeur sera examinée par un administrateur.",
-                    "statut", "ELEVE",
+                    "statut", TypeStatut.ELEVE.name(),  // ✅ .name() pour retourner le String
                     "demandeProfesseur", true
             ));
         }
         // ✅ Si l'utilisateur s'inscrit comme ELEVE
         else {
-            users.setStatut("ELEVE");
+            users.setStatut(TypeStatut.ELEVE);
             users.setDemandeProfesseur(false);
             usersService.inscription(users);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "message", "Utilisateur créé avec succès. Vérifiez vos emails.",
-                    "statut", "ELEVE"
+                    "statut", TypeStatut.ELEVE.name()  // ✅ .name() pour retourner le String
             ));
         }
     }
-
-
 
     // -------------------------------
     // 🔹 Activation
