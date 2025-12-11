@@ -93,7 +93,7 @@ api.interceptors.response.use(
         // ❌ Le refresh a échoué → déconnecter l'utilisateur
         localStorage.removeItem("isAuthenticated");
         localStorage.removeItem("token");
-        localStorage.removeItem("currentUser");
+        localStorage.removofeItem("currentUser");
         
         // Rediriger vers la page de connexion
         if (window.location.pathname !== "/") {

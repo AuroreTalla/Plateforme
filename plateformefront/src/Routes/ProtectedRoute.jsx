@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../Composants/Authentification/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
-      import LoadingPage from "../Composants/LoadingPage.jsx";
+import LoadingPage from "../Composants/LoadingPage.jsx";
 
 
 export function ProtectedRoute({ children }) {
