@@ -1,13 +1,21 @@
 import { useContext } from "react";
-import { AuthContext } from "../Pages/Inscription/AuthContext";
+import { AuthContext } from "../Composants/Authentification/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
+      import LoadingPage from "../Composants/LoadingPage.jsx";
+
 
 export function ProtectedRoute({ children }) {
   const { currentUser, loading } = useContext(AuthContext);
+  
 
-  if (loading) return <div>Chargement...</div>; // attend la réponse backend
+if (loading) {
+  return <LoadingPage />;
+}
 
-  if (!currentUser) return <Navigate to="/" replace />; // non connecté
-
+  
+  if (!currentUser) {
+    return <Navigate to="/" replace />;
+  }
+  
   return children || <Outlet />;
 }

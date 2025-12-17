@@ -1,4 +1,3 @@
-// ConfigBackEnd/UserService.js
 import { api } from "./Api";
 
 // 🧩 Authentification
@@ -15,6 +14,7 @@ export const activationUser = (email, code) =>
   api.post("/users/activation", { email, code });
 
 export const getCurrentUser = () => api.get("/users/me");
+
 
 export const getUserByEmail = (email) => api.get(`/users/email/${email}`);
 

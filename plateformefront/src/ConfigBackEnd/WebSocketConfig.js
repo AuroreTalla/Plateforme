@@ -1,4 +1,3 @@
-// ConfigBackEnd/WebSocketConfig.js
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -12,48 +11,57 @@ export const connectWebSocket = (onConnected, onError) => {
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
-    
     onConnect: () => {
       console.log('✅ WebSocket connecté');
       if (onConnected) onConnected();
     },
-    
     onStompError: (frame) => {
       console.error('❌ Erreur STOMP:', frame);
       if (onError) onError(frame);
     },
-    
     onWebSocketError: (error) => {
       console.error('❌ Erreur WebSocket:', error);
       if (onError) onError(error);
     }
   });
-
+  
   stompClient.activate();
   return stompClient;
 };
 
+// ✅ CORRECTION : Syntaxe parenthèses au lieu de backticks
 export const subscribeToGroupe = (groupeNom, callback) => {
   if (!stompClient || !stompClient.connected) {
     console.warn('⚠️ WebSocket non connecté');
     return null;
   }
-
+  
   return stompClient.subscribe(`/topic/groupe/${groupeNom}`, (message) => {
     const messageData = JSON.parse(message.body);
     callback(messageData);
   });
 };
 
-export const sendMessage = (groupeNom, contenu) => {
+// ✅ Envoi de message
+export const sendMessage = (groupeNom, content, userEmail) => {
   if (!stompClient || !stompClient.connected) {
     console.error('❌ Impossible d\'envoyer le message : WebSocket non connecté');
     return false;
   }
-
+  
+  if (!userEmail) {
+    console.error('❌ Email utilisateur manquant');
+    return false;
+  }
+  
+  console.log('📤 Envoi message:', { groupeNom, content, userEmail });
+  
   stompClient.publish({
     destination: `/app/sendMessage/${groupeNom}`,
-    body: JSON.stringify({ contenu })
+    body: JSON.stringify({ 
+      content,
+      userEmail
+    })
   });
   
   return true;
@@ -67,3 +75,7 @@ export const disconnectWebSocket = () => {
 };
 
 export const getStompClient = () => stompClient;
+
+export const isConnected = () => {
+  return stompClient && stompClient.connected;
+};
