@@ -7,7 +7,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,9 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @AllArgsConstructor
 @Service
@@ -26,6 +22,7 @@ public class UsersService implements UserDetailsService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final ProfService profService;  // ✅ Injection de ProfService
 
     @Transactional
     public void inscription(Users users) {
@@ -64,8 +61,14 @@ public class UsersService implements UserDetailsService {
         return this.usersRepository.save(userActive);
     }
 
+    /**
+     * Délègue la notification à ProfService
+     */
+    public void notifierAdminDemandeProfesseur(Users user) {
+        profService.notifierAdminDemandeProfesseur(user);
+    }
 
-    //spring security
+    // Méthodes existantes pour Spring Security et gestion utilisateurs
     @Override
     public Users loadUserByUsername(String email) throws UsernameNotFoundException {
         return this.usersRepository

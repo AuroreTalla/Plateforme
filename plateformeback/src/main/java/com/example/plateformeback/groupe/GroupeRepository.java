@@ -12,13 +12,13 @@ import java.util.Optional;
 
 public interface GroupeRepository extends JpaRepository<Groupe, Long> {
 
-    // Chercher un groupe par son nom
+    @EntityGraph(attributePaths = "membres")
     Optional<Groupe> findByNom(String nom);
 
-    // Récupérer les messages d'un groupe par nom avec pagination
     @Query("SELECT m FROM Message m WHERE m.groupe.nom = :nom ORDER BY m.dateEnvoie ASC")
     List<Message> findMessagesByGroupeNom(@Param("nom") String nom, Pageable pageable);
 
     @EntityGraph(attributePaths = "membres")
     List<Groupe> findAll();
+
 }

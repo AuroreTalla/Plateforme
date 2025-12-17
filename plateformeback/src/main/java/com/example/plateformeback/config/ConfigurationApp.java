@@ -43,7 +43,7 @@ public class ConfigurationApp {
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/**").permitAll()
-                        .requestMatchers("/groupes/**").permitAll()
+                        .requestMatchers("/groupes/**").authenticated()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/app/**").permitAll()
                         .anyRequest().authenticated()

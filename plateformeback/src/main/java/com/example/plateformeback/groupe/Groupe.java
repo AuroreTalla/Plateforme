@@ -20,19 +20,22 @@ import java.util.List;
 @Table(name = "groupe")
 public class Groupe {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
-    @Column(name = "nom", unique = true)
-    private String nom;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    private String description;
+        private String nom;
+        private String description;
 
-    @OneToMany(mappedBy = "groupe", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Message> messages = new ArrayList<>();
+        // ✅ IMPORTANT : cascade ALL pour persister la relation
+        @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+        @JoinTable(
+                name = "groupe_users",
+                joinColumns = @JoinColumn(name = "groupe_id"),
+                inverseJoinColumns = @JoinColumn(name = "user_id")
+        )
+        private List<Users> membres = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "groupes")
-    private List<Users> membres = new ArrayList<>();
+
 }
