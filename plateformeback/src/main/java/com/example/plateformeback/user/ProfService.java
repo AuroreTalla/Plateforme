@@ -1,87 +1,120 @@
 package com.example.plateformeback.user;
 
 import com.example.plateformeback.enums.TypeStatut;
-import com.example.plateformeback.verificationEmail.EmailVerificationService;
+import com.example.plateformeback.verificationEmail.NotificationService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class ProfService {
 
     private final UsersRepository usersRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final EmailVerificationService emailVerificationService;
+    private final NotificationService notificationService;
 
-    // ✅ Récupérer tous les utilisateurs avec demande professeur en attente
+    /**
+     * Récupère tous les utilisateurs avec une demande professeur en attente
+     */
     public List<Users> getUsersAvecDemandeProfesseur() {
-        return usersRepository.findByDemandeProfesseurTrueAndStatut("ELEVE");
+        return usersRepository.findByDemandeProfesseurTrueAndStatut(TypeStatut.ELEVE);
     }
 
-    // ✅ Valider un utilisateur comme professeur
+    /**
+     * Valide un utilisateur comme professeur
+     */
     @Transactional
     public Users validerCommeProfesseur(Long userId) {
         Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé"));
 
+        // Vérifications
         if (!user.isDemandeProfesseur()) {
-            throw new RuntimeException("Cet utilisateur n'a pas fait de demande professeur");
+            throw new IllegalStateException("Cet utilisateur n'a pas fait de demande professeur");
         }
 
-        if (!"ELEVE".equals(user.getStatut())) {
-            throw new RuntimeException("Cet utilisateur n'est pas un élève");
+        if (!TypeStatut.ELEVE.equals(user.getStatut())) {
+            throw new IllegalStateException("Seul un élève peut être validé comme professeur");
         }
 
-        // ✅ Changer le statut
+        // Changement de statut
         user.setStatut(TypeStatut.PROFESSEUR);
-        user.setDemandeProfesseur(false); // Réinitialiser la demande
+        user.setDemandeProfesseur(false);
 
-        return usersRepository.save(user);
+        Users savedUser = usersRepository.save(user);
+        log.info("Utilisateur {} validé comme professeur", user.getEmail());
+
+        return savedUser;
     }
 
-    // ✅ Refuser une demande professeur
+    /**
+     * Refuse une demande professeur (sans notification)
+     */
     @Transactional
-    public Users refuserDemandeProfesseur(Long userId, String raison) {
+    public Users refuserDemandeProfesseur(Long userId) {
         Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé"));
+
+        if (!user.isDemandeProfesseur()) {
+            throw new IllegalStateException("Cet utilisateur n'a pas de demande professeur en attente");
+        }
 
         // Réinitialiser la demande
         user.setDemandeProfesseur(false);
 
-        // Envoyer un email de refus
-        emailService.envoyerEmailRefusProfesseur(user, raison);
+        Users savedUser = usersRepository.save(user);
+        log.info("Demande professeur refusée pour {}", user.getEmail());
 
-        return usersRepository.save(user);
+        return savedUser;
     }
 
-    // ✅ Notifier l'admin d'une nouvelle demande
-    public void notifierAdminDemandeProfesseur(Users user) {
-        // Récupérer tous les admins
-        List<Users> admins = usersRepository.findByStatut("ADMIN");
+    /**
+     * Notifie tous les admins d'une nouvelle demande professeur
+     */
+    public void notifierAdminDemandeProfesseur(Users demandeur) {
+        List<Users> admins = usersRepository.findByStatut(TypeStatut.ADMIN);
+
+        if (admins.isEmpty()) {
+            log.warn("Aucun admin trouvé pour notifier la demande de {}", demandeur.getEmail());
+            return;
+        }
 
         for (Users admin : admins) {
-            emailService.envoyerEmailNouvelleDemandeProf(admin, user);
+            try {
+                notificationService.envoyerEmailNouvelleDemandeProf(admin, demandeur);
+            } catch (Exception e) {
+                log.error("Erreur notification admin {} : {}", admin.getEmail(), e.getMessage());
+                // Continue avec les autres admins même si un échoue
+            }
+        }
+
+        log.info("Notification envoyée à {} admin(s) pour la demande de {}",
+                admins.size(), demandeur.getEmail());
+    }
+
+    /**
+     * Envoie un email de validation au professeur
+     */
+    public void envoyerEmailValidationProfesseur(Users user) {
+        try {
+            notificationService.envoyerEmailValidationProfesseur(user);
+            log.info("Email de validation envoyé à {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Erreur envoi email validation à {} : {}", user.getEmail(), e.getMessage());
+            // Ne pas faire échouer la transaction si l'email échoue
         }
     }
 
-    // ✅ Envoyer email de validation
-    public void envoyerEmailValidationProfesseur(Users user) {
-        String sujet = "Demande de statut professeur validée";
-        String message = String.format(
-                "Bonjour %s,\n\n" +
-                        "Votre demande de statut professeur a été validée par l'administrateur.\n" +
-                        "Vous pouvez maintenant accéder à toutes les fonctionnalités réservées aux professeurs.\n\n" +
-                        "Cordialement,\nL'équipe",
-                user.getName()
-        );
-
-        emailService.envoyerEmail(user.getEmail(), sujet, message);
+    /**
+     * Compte le nombre de demandes en attente
+     */
+    public long compterDemandesEnAttente() {
+        return usersRepository.findByDemandeProfesseurTrueAndStatut(TypeStatut.ELEVE).size();
     }
 }
 
-
-}
