@@ -54,9 +54,10 @@ function Connexion() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f5faf7] p-4 md:p-8">
-      <div className="flex w-full max-w-[1550px] min-h-[850px] bg-white rounded-3xl shadow-2xl overflow-hidden">
-        
+    <div className="h-screen flex items-center justify-center bg-[#f5faf7] overflow-hidden">
+
+      <div className="flex w-full max-w-[1100px] h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
+ 
         {/* Section Image - 40% */}
         <div 
           className="w-1/2 bg-cover bg-center bg-no-repeat relative hidden lg:block"
@@ -70,7 +71,7 @@ function Connexion() {
           {/* Texte sur l'image */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8">
             <SchoolIcon style={{ fontSize: 100, marginBottom: 24 }} />
-            <h2 className="text-4xl font-bold mb-4">EduPlateforme</h2>
+            <h2 className="text-4xl font-bold mb-4">Plateforme</h2>
             <p className="text-xl text-center max-w-md">
               Apprenez, enseignez et grandissez ensemble
             </p>
@@ -78,11 +79,10 @@ function Connexion() {
         </div>
 
         {/* Section Formulaire - 60% */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 md:p-12 bg-white overflow-y-auto">
+        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 md:p-12 bg-white overflow-hidden">
           
           {/* Header */}
           <div className="text-center mb-8">
-            <SchoolIcon className="lg:hidden" style={{ fontSize: 60, color: "#1e40af", marginBottom: 16 }} />
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Connexion</h1>
             <p className="text-gray-600">Bon retour parmi nous !</p>
           </div>
@@ -165,7 +165,7 @@ function Connexion() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="login-button-design disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="login-button-design"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">

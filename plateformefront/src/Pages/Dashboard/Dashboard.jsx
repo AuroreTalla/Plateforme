@@ -1,25 +1,28 @@
-import { useEffect, useContext } from "react";
-import { Box } from "@mui/material";
-import { Outlet, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../Composants/Authentification/AuthContext";
-import Sidebar from "../../Composants/SideBar.jsx";
-
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { currentUser } = useContext(AuthContext);
-
-  useEffect(() => {
-    if (!currentUser) navigate("/", { replace: true });
-  }, [currentUser, navigate]);
-
-  if (!currentUser) return null;
-
   return (
-    <Box display="flex" className="h-screen">
-      <Sidebar name={currentUser.name} email={currentUser.email} />
-      <Box flex={1} p={3} className="bg-gray-50">
-        <Outlet />
-      </Box>
-    </Box>
+    <div className="max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-violet-700 mb-4">
+        Bienvenue sur votre Dashboard
+      </h1>
+      <p className="text-gray-600 text-lg">
+        Sélectionnez une section dans le menu.
+      </p>
+      
+      {/* Exemple de contenu */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <h3 className="font-bold text-xl text-gray-900 mb-2">Statistique 1</h3>
+          <p className="text-gray-600">Contenu ici</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <h3 className="font-bold text-xl text-gray-900 mb-2">Statistique 2</h3>
+          <p className="text-gray-600">Contenu ici</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <h3 className="font-bold text-xl text-gray-900 mb-2">Statistique 3</h3>
+          <p className="text-gray-600">Contenu ici</p>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,90 +1,131 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from "./ProtectedRoute.jsx";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import { ProtectedRoute } from "./ProtectedRoute";
 
-// Pages
-import PageAcceuil from '../Pages/Acceuil/PageAcceuil.jsx';
-import Layout from "../Composants/Layout.jsx";
+// Layouts
+import Layout from "../Composants/Layout/GlobalLayout";
+import DashboardLayout from "../Composants/Layout/DashboardLayout";
 
+// Public pages
+import PageAcceuil from "../Pages/Acceuil/PageAcceuil";
+import Apropos from "../Composants/NavBar/Apropos";
+import Inscription from "../Pages/Inscription/Inscription";
+import ActivationCode from "../Pages/Inscription/ActivationCode";
+import Connexion from "../Pages/Connexion/Connexion";
 
-import Apropos from '../Composants/NavBar/Apropos.jsx';
+// Dashboard pages
+import Dashboard from "../Pages/Dashboard/Dashboard";
+import Forum from "../Pages/Forum/Forum";
+import InfoProf from "../Pages/Admin/InfoProf";
+import Math from "../Pages/Matiere/Math/Math";
+import Phys from "../Pages/Matiere/Phys/Phys";
+import Chim from "../Pages/Matiere/Chim/Chim";
+import CoursM from "../Pages/Matiere/Math/CoursM";
+import ExoM from "../Pages/Matiere/Math/ExoM";
+import CoursP from "../Pages/Matiere/Phys/CoursP";
+import ExoP from "../Pages/Matiere/Phys/ExoP";
+import CoursC from "../Pages/Matiere/Chim/CoursC";
+import ExoC from "../Pages/Matiere/Chim/ExoC";
 
-import Inscription from '../Pages/Inscription/Inscription.jsx';
-import ActivationCode from '../Pages/Inscription/ActivationCode.jsx';
+// Pages Communes
+import Parametre from "../Pages/Parametre/Parametre";
+import Feedback from "../Pages/Feedback/Feedback";
 
-import Connexion from '../Pages/Connexion/Connexion.jsx';
+// Pages Professeur
+import MesDemandes from "../Pages/Demandes/MesDemandes";
 
-import Dashboard from '../Pages/Dashboard/Dashboard.jsx';
-import Math from '../Pages/Matiere/Math/Math.jsx';
-import Chim from '../Pages/Matiere/Chim/Chim.jsx';
-import Phys from '../Pages/Matiere/Phys/Phys.jsx';
-import CoursM from '../Pages/Matiere/Math/CoursM.jsx';
-import ExoM from '../Pages/Matiere/Math/ExoM.jsx';
-import CoursP from '../Pages/Matiere/Phys/CoursP.jsx';
-import ExoP from '../Pages/Matiere/Phys/ExoP.jsx';
-import CoursC from '../Pages/Matiere/Chim/CoursC.jsx';
-import ExoC from '../Pages/Matiere/Chim/ExoC.jsx';
-import Forum from '../Pages/Forum/Forum.jsx';
+// Pages Admin
+import UsersList from "../Pages/Admin/UsersList";
+import ForumsAdmin from "../Pages/Admin/ForumsAdmin";
+import { MatiereList, MatiereCreate } from "../Pages/Admin/Matiere/MatierePages";
+import { DemandesProf, DemandesMatieres } from "../Pages/Admin/Demandes/DemandesAdmin";
 
 const router = createBrowserRouter([
-  { path: "*", element: <Navigate to="/" replace /> },
 
-  // ----------- Routes publiques -----------
+
+
+  // Public
+  { path: "/inscription", element: <Inscription /> },
+  { path: "/activationcode", element: <ActivationCode /> },
+  { path: "/connexion", element: <Connexion /> },
   {
-    element: <Layout />,  // <--- La NavBar ici
+    element: <Layout />,
     children: [
       { path: "/", element: <PageAcceuil /> },
       { path: "/apropos", element: <Apropos /> },
-      { path: "/inscription", element: <Inscription /> },
-      { path: "/activationcode", element: <ActivationCode /> },
-      { path: "/connexion", element: <Connexion /> },
+      {
+        path: "/dashboard",
+        element: (
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Dashboard /> },
+
+          { path: "forum/:sujet?", element: <Forum /> },
+          { path: "infoprof", element: <InfoProf /> },
+
+          {
+            path: "math",
+            element: <Math />,
+            children: [
+              { index: true, element: <CoursM /> },
+              { path: "cours", element: <CoursM /> },
+              { path: "exo", element: <ExoM /> },
+            ],
+          },
+
+          {
+            path: "phys",
+            element: <Phys />,
+            children: [
+              { index: true, element: <CoursP /> },
+              { path: "cours", element: <CoursP /> },
+              { path: "exo", element: <ExoP /> },
+            ],
+          },
+
+          // Routes Communes
+          { path: "parametre", element: <Parametre /> },
+          { path: "feedback", element: <Feedback /> },
+
+          // Routes Professeur
+          { path: "demandes", element: <MesDemandes /> },
+
+          // Routes Admin
+          { path: "users", element: <UsersList /> },
+          { path: "forums", element: <ForumsAdmin /> },
+          {
+            path: "matieres",
+            children: [
+              { path: "list", element: <MatiereList /> },
+              { path: "create", element: <MatiereCreate /> },
+            ]
+          },
+          {
+            path: "demandes",
+            children: [
+              { path: "prof", element: <DemandesProf /> },
+              { path: "matieres", element: <DemandesMatieres /> },
+            ]
+          },
+
+          {
+            path: "chim",
+            element: <Chim />,
+            children: [
+              { index: true, element: <CoursC /> },
+              { path: "cours", element: <CoursC /> },
+              { path: "exo", element: <ExoC /> },
+            ],
+          },
+        ],
+      },
+
+
     ]
   },
-
-  // ----------- Routes protégées -----------
-  {
-    path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <Layout />  
-        <Dashboard /> {/* <-- La NavBar aussi dans le dashboard */}
-      </ProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <Navigate to="forum" replace /> },
-
-      { path: "forum", element: <Forum /> },
-
-      {
-        path: "math",
-        element: <Math />,
-        children: [
-          { index: true, element: <Navigate to="coursM" replace /> },
-          { path: "coursM", element: <CoursM /> },
-          { path: "exoM", element: <ExoM /> },
-        ]
-      },
-
-      {
-        path: "phys",
-        element: <Phys />,
-        children: [
-          { index: true, element: <Navigate to="coursP" replace /> },
-          { path: "coursP", element: <CoursP /> },
-          { path: "exoP", element: <ExoP /> },
-        ]
-      },
-
-      {
-        path: "chim",
-        element: <Chim />,
-        children: [
-          { index: true, element: <Navigate to="coursC" replace /> },
-          { path: "coursC", element: <CoursC /> },
-          { path: "exoC", element: <ExoC /> },
-        ]
-      },
-    ],
-  },
+  { path: "*", element: <Navigate to="/" replace /> },
 ]);
 
 export default router;

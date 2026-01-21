@@ -40,10 +40,11 @@ public class ConfigurationApp {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // ✅ CORRIGÉ
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/groupes/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/app/**").permitAll()
                         .anyRequest().authenticated()
@@ -59,8 +60,13 @@ public class ConfigurationApp {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ Accepte localhost:5173 (React) ET tous les autres origins (HTML local)
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        // ✅ CORRIGÉ : Origins spécifiques au lieu de wildcard
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:5174",
+                "http://127.0.0.1:5173"
+        ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

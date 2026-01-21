@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import LoadingPage from "../LoadingPage.jsx";
-
-import { getCurrentUser, logoutUser, loginUser as apiLogin } from "../../ConfigBackEnd/UserService";
+import { getCurrentUser, logoutUser, loginUser } from "../../ConfigBackEnd/UserService";
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const isAuthenticated = !!currentUser;
 
-  // 🔁 Fonction de récupération côté backend
+  // ✅ Récupérer l'utilisateur depuis le backend
   const fetchCurrentUser = async () => {
     try {
+      console.log("🔍 Récupération utilisateur...");
+      
+      // ✅ Le cookie est envoyé automatiquement par le navigateur
       const res = await getCurrentUser();
       const user = res.data;
+      
+      console.log("✅ Utilisateur:", user.email, user.statut);
       setCurrentUser(user);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("currentUser", JSON.stringify(user));
-    } catch {
-      console.log("Utilisateur non connecté ou token expiré");
+      
+    } catch (error) {
+      console.log("❌ Pas d'utilisateur connecté:", error.response?.status);
       setCurrentUser(null);
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("currentUser");
-      localStorage.removeItem("token");  // ✅ Supprimer aussi le token
     } finally {
       setLoading(false);
     }
@@ -32,72 +31,70 @@ export const AuthProvider = ({ children }) => {
     fetchCurrentUser();
   }, []);
 
-  // ✅ FONCTION LOGIN : Sauvegarder le token
   const login = async (email, password) => {
     try {
-      const res = await apiLogin(email, password);
+      console.log("🔐 Connexion:", email);
       
-      console.log('📦 Réponse login:', res.data);
+      // ✅ Nettoyer l'état actuel
+      setCurrentUser(null);
       
-      // ✅ Sauvegarder le token si présent
-      if (res?.data?.token) {
-        localStorage.setItem('token', res.data.token);
-        console.log('✅ Token sauvegardé:', res.data.token.substring(0, 30) + '...');
-      } else {
-        console.warn('⚠️ Aucun token reçu du backend');
+      // ✅ Backend va automatiquement créer les cookies
+      const res = await loginUser(email, password);
+      
+      console.log("📦 Réponse:", {
+        hasUser: !!res?.data?.user,
+        email: res?.data?.user?.email,
+        statut: res?.data?.user?.statut
+      });
+      
+      // ✅ Vérifier l'utilisateur dans la réponse
+      if (!res?.data?.user) {
+        console.error("❌ Pas d'utilisateur dans la réponse");
+        return { success: false, error: "Pas d'utilisateur" };
       }
       
-      // ✅ Sauvegarder l'utilisateur
-      if (res?.data?.user) {
-        const user = res.data.user;
-        setCurrentUser(user);
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("currentUser", JSON.stringify(user));
-        return { success: true, user };
-      }
+      // ✅ Mettre à jour l'état avec l'utilisateur reçu
+      setCurrentUser(res.data.user);
       
-      return { success: false };
+      console.log("✅ Login réussi");
+      return { success: true, user: res.data.user };
       
     } catch (error) {
-      console.error('❌ Erreur login:', error);
-      return { success: false, error };
+      console.error("❌ Erreur login:", error.response?.data || error.message);
+      setCurrentUser(null);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || "Erreur de connexion" 
+      };
     }
   };
 
   const logout = async () => {
     try {
+      console.log("🚪 Déconnexion...");
+      // ✅ Backend va supprimer les cookies
       await logoutUser();
     } catch (error) {
-      console.warn("Erreur lors de la déconnexion backend", error);
+      console.warn("⚠️ Erreur déconnexion:", error);
     } finally {
       setCurrentUser(null);
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("currentUser");
-      localStorage.removeItem("token");  // ✅ Supprimer le token
+      console.log("✅ Déconnexion complète");
     }
-  };
-
-  // ✅ NOUVELLE FONCTION : Mettre à jour après inscription/activation
-  const updateUser = (user) => {
-    setCurrentUser(user);
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("currentUser", JSON.stringify(user));
   };
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
-        setCurrentUser: updateUser,
-        isAuthenticated,
+        isAuthenticated: !!currentUser,
         loading,
         login,
         logout,
         refreshUser: fetchCurrentUser,
+        setCurrentUser,
       }}
     >
       {loading ? <LoadingPage /> : children}
-
     </AuthContext.Provider>
   );
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useContext } from 'react';
-import { Box, Paper, Typography, TextField, IconButton, Avatar, AppBar, Toolbar, CircularProgress, Chip, Button } from '@mui/material';
-import { Send as SendIcon, ArrowBack as ArrowBackIcon, Group as GroupIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
+import { Box, Paper, Typography, TextField, IconButton, Avatar, AppBar, Toolbar, CircularProgress, Chip, Button, Fade } from '@mui/material';
+import { Send as SendIcon, ArrowBack as ArrowBackIcon, Group as GroupIcon, PersonAdd as PersonAddIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
 import { AuthContext } from "../../Composants/Authentification/AuthContext";
 import { getMessages, joinGroupe } from '../../ConfigBackEnd/GroupService';
 import { subscribeToGroupe, sendMessage } from '../../ConfigBackEnd/WebSocketConfig';
@@ -11,7 +11,7 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isMember, setIsMember] = useState(false);  // ✅ Changé de "joined" à "isMember"
+  const [isMember, setIsMember] = useState(false);
   const [joining, setJoining] = useState(false);
 
   const messagesEndRef = useRef(null);
@@ -21,123 +21,87 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
 
   useEffect(() => { scrollToBottom(); }, [messages]);
 
-  // ✅ NOUVEAU : Vérifier si l'utilisateur est membre (sans rejoindre automatiquement)
   useEffect(() => {
     const checkMember = async () => {
       try {
         setLoading(true);
-        
-        // Essayer de charger les messages
         try {
           const res = await getMessages(groupeNom);
           setMessages(res.data);
-          setIsMember(true); // Si ça marche, on est membre
-          console.log(`✅ Membre du groupe, ${res.data.length} messages chargés`);
+          setIsMember(true);
         } catch (error) {
-          // Si erreur 403/401, on n'est pas membre
           if (error.response?.status === 403 || error.response?.status === 401) {
             setIsMember(false);
-            console.log('⚠️ Non membre du groupe');
           } else {
-            throw error; // Autre erreur
+            throw error;
           }
         }
-        
       } catch (error) {
         console.error('❌ Erreur vérification:', error);
-      } finally { 
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
 
     if (groupeNom) checkMember();
   }, [groupeNom]);
 
-  // ✅ S'abonner au WebSocket seulement si membre
   useEffect(() => {
     if (!groupeNom || !wsConnected || !isMember) return;
 
-    console.log(`📡 Abonnement au groupe: ${groupeNom}`);
-    
     if (subscriptionRef.current) {
       subscriptionRef.current.unsubscribe();
     }
 
     subscriptionRef.current = subscribeToGroupe(groupeNom, (message) => {
-      console.log('💬 Message reçu:', message);
       setMessages(prev => [...prev, message]);
     });
 
     return () => {
       if (subscriptionRef.current) {
-        console.log(`🔌 Désabonnement du groupe: ${groupeNom}`);
         subscriptionRef.current.unsubscribe();
       }
     };
   }, [groupeNom, wsConnected, isMember]);
 
-  // ✅ NOUVEAU : Fonction pour rejoindre le groupe
   const handleJoinGroupe = async () => {
-  try {
-    setJoining(true);
-    
-    // 1️⃣ Rejoindre le groupe
-    await joinGroupe(groupeNom);
-    console.log(`✅ Rejoint le groupe: ${groupeNom}`);
-    
-    // 2️⃣ Petit délai pour s'assurer que la transaction est commitée
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    // 3️⃣ Recharger les messages
-    const res = await getMessages(groupeNom);
-    setMessages(res.data);
-    setIsMember(true);
-    
-    console.log(`✅ ${res.data.length} messages chargés`);
-    
-  } catch (error) {
-    console.error('❌ Erreur rejoindre groupe:', error);
-    
-    if (error.response?.status === 403) {
-      alert('Vous devez être membre du groupe pour voir les messages');
-    } else {
-      alert('Impossible de rejoindre le groupe');
+    try {
+      setJoining(true);
+      await joinGroupe(groupeNom);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const res = await getMessages(groupeNom);
+      setMessages(res.data);
+      setIsMember(true);
+    } catch (error) {
+      console.error('❌ Erreur rejoindre groupe:', error);
+      if (error.response?.status === 403) {
+        alert('Vous devez être membre du groupe pour voir les messages');
+      } else {
+        alert('Impossible de rejoindre le groupe');
+      }
+    } finally {
+      setJoining(false);
     }
-  } finally {
-    setJoining(false);
-  }
-};
+  };
 
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !wsConnected || !isMember) {
-      console.warn('⚠️ Impossible d\'envoyer:', { wsConnected, isMember, hasContent: !!newMessage.trim() });
-      return;
-    }
-    
-    if (!currentUser?.email) {
-      console.error('❌ Email utilisateur manquant');
-      return;
-    }
-    
-    console.log('📤 Envoi message:', { groupeNom, newMessage, userEmail: currentUser.email });
+    if (!newMessage.trim() || !wsConnected || !isMember) return;
+    if (!currentUser?.email) return;
+
     const success = sendMessage(groupeNom, newMessage, currentUser.email);
-    
     if (success) {
       setNewMessage('');
-      console.log('✅ Message envoyé avec succès');
-    } else {
-      console.error('❌ Échec envoi message');
     }
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const today = new Date();
-    const yesterday = new Date(today); 
+    const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
-      return `Aujourd'hui ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
     if (date.toDateString() === yesterday.toDateString()) {
       return `Hier ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
@@ -147,143 +111,170 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress size={60} />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#f3f4f6' }}>
+        <CircularProgress sx={{ color: '#8b5cf6' }} size={60} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <AppBar position="static" elevation={1} sx={{ bgcolor: 'background.paper' }}>
-        <Toolbar>
-          <IconButton edge="start" onClick={onBack} sx={{ mr: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#f8fafc' }}>
+      {/* Header Premium Violet */}
+      <AppBar position="static" elevation={0} sx={{
+        background: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)',
+        color: 'white',
+        borderBottomLeftRadius: 16,
+        borderBottomRightRadius: 16,
+        boxShadow: '0 4px 20px -5px rgba(109, 40, 217, 0.4)'
+      }}>
+        <Toolbar sx={{ minHeight: '70px !important' }}>
+          <IconButton edge="start" onClick={onBack} sx={{ mr: 2, color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
             <ArrowBackIcon />
           </IconButton>
-          <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-            <GroupIcon />
+
+          <Avatar sx={{
+            bgcolor: 'white',
+            color: '#7c3aed',
+            mr: 2,
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            fontWeight: 'bold'
+          }}>
+            {groupeNom.charAt(0).toUpperCase()}
           </Avatar>
+
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h6" color="text.primary">{groupeNom}</Typography>
-            <Chip 
-              label={isMember ? (wsConnected ? 'Connecté' : 'Déconnecté') : 'Non membre'} 
-              size="small" 
-              color={isMember ? (wsConnected ? 'success' : 'warning') : 'default'} 
-              sx={{ height: 20 }} 
-            />
+            <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>{groupeNom}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                bgcolor: isMember && wsConnected ? '#4ade80' : '#fb7185',
+                boxShadow: isMember && wsConnected ? '0 0 8px #4ade80' : 'none'
+              }} />
+              <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                {isMember ? (wsConnected ? 'En ligne' : 'Connexion...') : 'Aperçu'}
+              </Typography>
+            </Box>
           </Box>
+
+          <IconButton size="small" sx={{ color: 'white', opacity: 0.8 }}>
+            <MoreVertIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2, bgcolor: 'grey.50' }}>
-        {/* ✅ NOUVEAU : Afficher bouton "Rejoindre" si pas membre */}
+      {/* Messages Area */}
+      <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3, display: 'flex', flexDirection: 'column' }}>
         {!isMember ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-            <GroupIcon sx={{ fontSize: 80, mb: 3, color: 'primary.main' }} />
-            <Typography variant="h5" gutterBottom>
-              Rejoindre {groupeNom}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, textAlign: 'center', maxWidth: 400 }}>
-              Vous devez rejoindre ce groupe pour voir et envoyer des messages
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<PersonAddIcon />}
-              onClick={handleJoinGroupe}
-              disabled={joining}
-              sx={{ px: 4, py: 1.5 }}
-            >
-              {joining ? 'Rejoindre en cours...' : 'Rejoindre le groupe'}
-            </Button>
-          </Box>
+          <Fade in={true} timeout={800}>
+            <Paper elevation={0} sx={{
+              p: 4,
+              maxWidth: 400,
+              mx: 'auto',
+              mt: 8,
+              textAlign: 'center',
+              borderRadius: 4,
+              bgcolor: 'white',
+              boxShadow: '0 10px 40px -10px rgba(0,0,0,0.05)'
+            }}>
+              <Avatar sx={{ width: 80, height: 80, bgcolor: '#f5f3ff', color: '#7c3aed', mx: 'auto', mb: 2 }}>
+                <GroupIcon sx={{ fontSize: 40 }} />
+              </Avatar>
+              <Typography variant="h5" fontWeight="bold" color="#1e293b" gutterBottom>
+                Rejoindre {groupeNom}
+              </Typography>
+              <Typography color="#64748b" sx={{ mb: 4 }}>
+                Rejoignez la discussion pour échanger avec votre classe et vos professeurs.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<PersonAddIcon />}
+                onClick={handleJoinGroupe}
+                disabled={joining}
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderRadius: 3,
+                  bgcolor: '#7c3aed',
+                  '&:hover': { bgcolor: '#6d28d9', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' },
+                  textTransform: 'none',
+                  fontSize: '1rem'
+                }}
+              >
+                {joining ? 'Connexion en cours...' : 'Rejoindre le groupe'}
+              </Button>
+            </Paper>
+          </Fade>
         ) : messages.length === 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
-            <GroupIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
-            <Typography variant="h6" gutterBottom>Aucun message pour le moment</Typography>
-            <Typography variant="body2">Soyez le premier à envoyer un message !</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5 }}>
+            <GroupIcon sx={{ fontSize: 64, mb: 2, color: '#cbd5e1' }} />
+            <Typography variant="h6" color="#94a3b8">Aucun message</Typography>
+            <Typography variant="body2" color="#94a3b8">Lancez la discussion !</Typography>
           </Box>
         ) : (
-          <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 2 }}>
             {messages.map((message, index) => {
               const isOwnMessage = message.user.email === currentUser?.email;
               const showAvatar = index === 0 || messages[index - 1].user.email !== message.user.email;
-              
+
               return (
-                <Box 
-                  key={message.id || index} 
-                  sx={{ 
-                    display: 'flex', 
-                    flexDirection: isOwnMessage ? 'row-reverse' : 'row', 
-                    mb: 2, 
-                    alignItems: 'flex-end' 
-                  }}
-                >
-                  {showAvatar ? (
-                    <Avatar 
-                      sx={{ 
-                        bgcolor: isOwnMessage ? 'primary.main' : 'grey.400', 
-                        width: 32, 
-                        height: 32, 
-                        fontSize: '0.875rem', 
-                        mx: 1 
-                      }}
-                    >
-                      {message.user.name.charAt(0).toUpperCase()}
-                    </Avatar>
-                  ) : (
-                    <Box sx={{ width: 32, mx: 1 }} />
-                  )}
-                  
-                  <Box sx={{ maxWidth: '60%' }}>
-                    {showAvatar && (
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          display: 'block', 
-                          mb: 0.5, 
-                          ml: isOwnMessage ? 0 : 1, 
-                          mr: isOwnMessage ? 1 : 0, 
-                          textAlign: isOwnMessage ? 'right' : 'left', 
-                          color: isOwnMessage ? 'primary.main' : 'text.secondary', 
-                          fontWeight: 500 
-                        }}
-                      >
-                        {isOwnMessage ? 'Vous' : message.user.name}
-                      </Typography>
+                <Fade in={true} key={message.id || index}>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: isOwnMessage ? 'row-reverse' : 'row',
+                    alignItems: 'flex-end',
+                    gap: 1.5
+                  }}>
+                    {showAvatar ? (
+                      <Avatar sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: isOwnMessage ? '#7c3aed' : '#e2e8f0',
+                        color: isOwnMessage ? 'white' : '#64748b',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold'
+                      }}>
+                        {message.user.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    ) : (
+                      <Box sx={{ width: 32 }} />
                     )}
-                    
-                    <Paper 
-                      elevation={1} 
-                      sx={{ 
-                        px: 2, 
-                        py: 1.5, 
-                        bgcolor: isOwnMessage ? 'primary.main' : 'white', 
-                        color: isOwnMessage ? 'white' : 'text.primary', 
-                        borderRadius: 2, 
-                        ...(isOwnMessage ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }) 
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
-                        {message.content}
-                      </Typography>
-                    </Paper>
-                    
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        display: 'block', 
-                        mt: 0.5, 
-                        ml: isOwnMessage ? 0 : 1, 
-                        mr: isOwnMessage ? 1 : 0, 
-                        textAlign: isOwnMessage ? 'right' : 'left', 
-                        color: 'text.disabled' 
-                      }}
-                    >
-                      {formatDate(message.dateEnvoie)}
-                    </Typography>
+
+                    <Box sx={{ maxWidth: '70%' }}>
+                      {showAvatar && !isOwnMessage && (
+                        <Typography variant="caption" sx={{ ml: 1, color: '#64748b', fontWeight: 600 }}>
+                          {message.user.name}
+                        </Typography>
+                      )}
+
+                      <Paper elevation={0} sx={{
+                        p: 2,
+                        bgcolor: isOwnMessage ? '#7c3aed' : 'white',
+                        color: isOwnMessage ? 'white' : '#1e293b',
+                        borderRadius: 3,
+                        borderBottomRightRadius: isOwnMessage ? 4 : 24,
+                        borderBottomLeftRadius: isOwnMessage ? 24 : 4,
+                        boxShadow: isOwnMessage
+                          ? '0 4px 15px -3px rgba(124, 58, 237, 0.3)'
+                          : '0 2px 10px -2px rgba(0,0,0,0.05)'
+                      }}>
+                        <Typography variant="body1" sx={{ wordWrap: 'break-word', lineHeight: 1.5 }}>
+                          {message.content}
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                          <Typography variant="caption" sx={{
+                            fontSize: '0.7rem',
+                            color: isOwnMessage ? 'rgba(255,255,255,0.7)' : '#94a3b8'
+                          }}>
+                            {formatDate(message.dateEnvoie)}
+                          </Typography>
+                        </Box>
+                      </Paper>
+                    </Box>
                   </Box>
-                </Box>
+                </Fade>
               );
             })}
             <div ref={messagesEndRef} />
@@ -291,41 +282,52 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
         )}
       </Box>
 
-      {/* ✅ NOUVEAU : Afficher zone de saisie seulement si membre */}
+      {/* Input Area */}
       {isMember && (
-        <Paper elevation={3} sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', gap: 1, maxWidth: 800, mx: 'auto' }}>
+        <Box sx={{ p: 2, bgcolor: 'white', borderTop: '1px solid #f1f5f9' }}>
+          <Paper
+            component="form"
+            elevation={0}
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+            sx={{
+              p: '2px 4px',
+              display: 'flex',
+              alignItems: 'center',
+              bgcolor: '#f8fafc',
+              borderRadius: 4,
+              border: '1px solid #e2e8f0',
+              transition: 'border-color 0.2s',
+              '&:focus-within': { borderColor: '#7c3aed', bgcolor: 'white' }
+            }}
+          >
             <TextField
               fullWidth
-              variant="outlined"
-              placeholder={wsConnected ? "Écrivez votre message..." : "En attente de connexion..."}
+              variant="standard"
+              placeholder="Écrivez votre message..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => { 
-                if (e.key === 'Enter' && !e.shiftKey) { 
-                  e.preventDefault(); 
-                  handleSendMessage(); 
-                } 
-              }}
               disabled={!wsConnected}
-              size="small"
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              InputProps={{ disableUnderline: true }}
+              sx={{ px: 2, py: 1.5 }}
             />
-            <IconButton 
-              color="primary" 
-              onClick={handleSendMessage} 
-              disabled={!newMessage.trim() || !wsConnected} 
-              sx={{ 
-                bgcolor: 'primary.main', 
-                color: 'white', 
-                '&:hover': { bgcolor: 'primary.dark' }, 
-                '&:disabled': { bgcolor: 'grey.300' } 
+            <IconButton
+              type="submit"
+              disabled={!newMessage.trim() || !wsConnected}
+              sx={{
+                mr: 0.5,
+                bgcolor: '#7c3aed',
+                color: 'white',
+                width: 40,
+                height: 40,
+                '&:hover': { bgcolor: '#6d28d9', transform: 'scale(1.05)' },
+                '&:disabled': { bgcolor: '#e2e8f0', color: '#cbd5e1' },
+                transition: 'all 0.2s'
               }}
             >
-              <SendIcon />
+              <SendIcon fontSize="small" />
             </IconButton>
-          </Box>
-        </Paper>
+          </Paper>
+        </Box>
       )}
     </Box>
   );

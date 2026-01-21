@@ -147,7 +147,7 @@ function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8 bottom-0 w-full">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col justify-center items-center">
               <div className="flex items-center space-x-4 mb-4">

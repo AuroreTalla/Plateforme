@@ -1,4 +1,5 @@
 CREATE DATABASE IF NOT EXISTS plateformeBD;
+
 USE plateformeBD;
 
 -- Table users
