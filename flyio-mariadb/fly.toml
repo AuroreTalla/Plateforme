@@ -1,0 +1,16 @@
+app = "plateforme-db"
+primary_region = "cdg"
+auto_start_machines = true
+
+[build]
+  dockerfile = "Dockerfile"
+
+[mounts]
+  source = "mariadb_data"
+  destination = "/var/lib/mysql"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+  always_on = true
