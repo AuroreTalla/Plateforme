@@ -54,7 +54,7 @@ public class ConfigurationApp {
                         .requestMatchers("/app/**").permitAll()
                         
                         // ✅ AJOUT: Healthcheck pour Docker
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         
                         // Endpoints protégés
                         .requestMatchers("/groupes/**").authenticated()
