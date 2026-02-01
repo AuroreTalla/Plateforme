@@ -4,8 +4,9 @@ import SockJS from 'sockjs-client';
 let stompClient = null;
 
 export const connectWebSocket = (onConnected, onError) => {
-  const socket = new SockJS('http://localhost:8081/ws');
-  
+  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+  const socket = new SockJS(`${backendUrl}/ws`);
+
   stompClient = new Client({
     webSocketFactory: () => socket,
     reconnectDelay: 5000,
@@ -24,7 +25,7 @@ export const connectWebSocket = (onConnected, onError) => {
       if (onError) onError(error);
     }
   });
-  
+
   stompClient.activate();
   return stompClient;
 };
@@ -35,7 +36,7 @@ export const subscribeToGroupe = (groupeNom, callback) => {
     console.warn('⚠️ WebSocket non connecté');
     return null;
   }
-  
+
   return stompClient.subscribe(`/topic/groupe/${groupeNom}`, (message) => {
     const messageData = JSON.parse(message.body);
     callback(messageData);
@@ -48,22 +49,22 @@ export const sendMessage = (groupeNom, content, userEmail) => {
     console.error('❌ Impossible d\'envoyer le message : WebSocket non connecté');
     return false;
   }
-  
+
   if (!userEmail) {
     console.error('❌ Email utilisateur manquant');
     return false;
   }
-  
+
   console.log('📤 Envoi message:', { groupeNom, content, userEmail });
-  
+
   stompClient.publish({
     destination: `/app/sendMessage/${groupeNom}`,
-    body: JSON.stringify({ 
+    body: JSON.stringify({
       content,
       userEmail
     })
   });
-  
+
   return true;
 };
 
