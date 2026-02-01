@@ -1,16 +1,24 @@
-# Étape 1 : Build avec Maven
+# ===============================
+# Stage 1: Build avec Maven
+# ===============================
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Étape 2 : Exécution avec JRE
-FROM eclipse-temurin:17-jre
+# ===============================
+# Stage 2: Runtime léger
+# ===============================
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Exposer le port 8081
-EXPOSE 8081
+# Render injecte la variable PORT
+ENV PORT=8081
+ENV SPRING_PROFILES_ACTIVE=prod
 
-# Lancer l'application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE ${PORT}
+
+ENTRYPOINT ["java", "-Xms256m", "-Xmx512m", "-jar", "app.jar"]
