@@ -7,7 +7,8 @@ import DashboardLayout from "../Composants/Layout/DashboardLayout";
 
 // Public pages
 import PageAcceuil from "../Pages/Acceuil/PageAcceuil";
-import Apropos from "../Composants/NavBar/Apropos";
+import APropos from "../Pages/APropos/APropos";
+import Contact from "../Pages/Contact/Contact";
 import Inscription from "../Pages/Inscription/Inscription";
 import ActivationCode from "../Pages/Inscription/ActivationCode";
 import Connexion from "../Pages/Connexion/Connexion";
@@ -51,7 +52,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/", element: <PageAcceuil /> },
-      { path: "/apropos", element: <Apropos /> },
+      { path: "/about", element: <APropos /> },
+      { path: "/contact", element: <Contact /> },
       {
         path: "/dashboard",
         element: (

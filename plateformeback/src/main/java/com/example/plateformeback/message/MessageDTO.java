@@ -14,7 +14,8 @@ public record MessageDTO(
 ) {
     public static MessageDTO fromEntity(Message message) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        // ✅ Utiliser ISO format pour que JavaScript puisse parser correctement
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         return new MessageDTO(
                 message.getId(),
                 message.getContent(),

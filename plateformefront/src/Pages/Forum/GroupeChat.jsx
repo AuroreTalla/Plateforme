@@ -95,18 +95,41 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
+    try {
+      // ✅ Parser la date ISO du backend
+      const date = new Date(dateString);
 
-    if (date.toDateString() === today.toDateString()) {
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      // ✅ Vérifier si la date est valide
+      if (isNaN(date.getTime())) {
+        console.error('Date invalide:', dateString);
+        return 'Date invalide';
+      }
+
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+
+      // Aujourd'hui : afficher seulement l'heure
+      if (date.toDateString() === today.toDateString()) {
+        return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      }
+
+      // Hier : afficher "Hier" + heure
+      if (date.toDateString() === yesterday.toDateString()) {
+        return `Hier ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      }
+
+      // Autre jour : afficher date + heure
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Erreur formatage date:', error, dateString);
+      return 'Date invalide';
     }
-    if (date.toDateString() === yesterday.toDateString()) {
-      return `Hier ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-    }
-    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   };
 
   if (loading) {

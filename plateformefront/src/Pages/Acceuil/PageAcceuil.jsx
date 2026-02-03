@@ -136,12 +136,6 @@ function LandingPage() {
             >
               Créer mon compte
             </button>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="px-10 py-4 border-2 border-purple-600 text-purple-600 rounded-full font-semibold text-lg hover:bg-purple-50 transition-all duration-300"
-            >
-              Découvrir les cours
-            </button>
           </div>
         </div>
       </section>
