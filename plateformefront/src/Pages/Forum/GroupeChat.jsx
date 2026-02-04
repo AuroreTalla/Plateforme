@@ -15,7 +15,6 @@ import {
   Tooltip,
   Badge,
   Divider,
-  InputAdornment
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -23,7 +22,6 @@ import {
   Group as GroupIcon,
   PersonAdd as PersonAddIcon,
   MoreVert as MoreVertIcon,
-  EmojiEmotions as EmojiIcon,
   AttachFile as AttachIcon,
   DoneAll as DoneAllIcon,
   ChatBubbleOutline as ChatIcon
@@ -181,11 +179,15 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
   if (loading) {
     return (
       <Box sx={{
+        flex: 1,
+        minHeight: 0,
+        position: 'relative',
+        overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100vh',
+        //height: '100vh',
         bgcolor: 'linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)',
         background: 'linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)'
       }}>
@@ -246,7 +248,7 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
         position="static"
         elevation={0}
         sx={{
-          background: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 50%, #a78bfa 100%)',
+          background: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 50%, #482f94ff 100%)',
           color: 'white',
           borderBottomLeftRadius: 24,
           borderBottomRightRadius: 24,
@@ -346,14 +348,14 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
                 mt: 0.5
               }}
             >
-              {isMember ? (
+              {/*{isMember ? (
                 wsConnected ? (
                   <>
                     <Box component="span" sx={{ color: '#4ade80' }}>●</Box>
-                    En ligne • {messages.length} messages
+                    En ligne
                   </>
                 ) : 'Reconnexion...'
-              ) : 'Aperçu du groupe'}
+              ) : 'Aperçu du groupe'}*/}
             </Typography>
           </Box>
 
@@ -712,18 +714,6 @@ function GroupeChat({ groupeNom, onBack, wsConnected }) {
                 }
               }}
             >
-              <Tooltip title="Emoji" arrow>
-                <IconButton
-                  size="small"
-                  sx={{
-                    color: '#a78bfa',
-                    '&:hover': { bgcolor: '#f5f3ff' }
-                  }}
-                >
-                  <EmojiIcon />
-                </IconButton>
-              </Tooltip>
-
               <Tooltip title="Joindre un fichier" arrow>
                 <IconButton
                   size="small"
