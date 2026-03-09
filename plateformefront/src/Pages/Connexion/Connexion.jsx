@@ -1,17 +1,18 @@
 import { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { loginUser } from "../../ConfigBackEnd/UserService";
+//import { loginUser } from "../../ConfigBackEnd/UserService";
 import { AuthContext } from "../../Composants/Authentification/AuthContext";
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SchoolIcon from '@mui/icons-material/School';
+import img from "../../assets/img1.jpeg"
 
 function Connexion() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setCurrentUser } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
 
   const defaultEmail = location.state?.email || "";
   const messageFromNavigation = location.state?.message || "";
@@ -32,26 +33,14 @@ function Connexion() {
     setLoading(true);
 
     try {
-      const response = await loginUser(email, password);
-
-      // ✅ Sauvegarder les tokens dans sessionStorage
-      if (response.data.token) {
-        sessionStorage.setItem("jwt_token", response.data.token);
-        console.log("✅ Token JWT sauvegardé");
-      }
-      if (response.data.refreshToken) {
-        sessionStorage.setItem("refresh_token", response.data.refreshToken);
-        console.log("✅ Refresh token sauvegardé");
-      }
-
+      const response = await login(email, password);
       // ✅ Sauvegarder l'utilisateur dans le contexte
-      setCurrentUser(response.data.user);
-
-      if (response.data.user.statut === "PROFESSEUR") {
-        navigate("/dashboard", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      if (!response.success) {
+      setError(response.error);
+      return;
+    }
+      navigate("/dashboard", { replace: true });
+    
     } catch (err) {
       if (err.response?.status === 401) {
         setError("Email ou mot de passe incorrect");
@@ -75,7 +64,7 @@ function Connexion() {
           className="w-1/2 bg-cover bg-center bg-no-repeat relative hidden lg:block"
           style={{
             //backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800')"
-            backgroundImage: "url('/assets/img1.jpeg')"
+            backgroundImage: `url(${img})`
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-800/30 to-purple-600/30"></div>
@@ -114,7 +103,7 @@ function Connexion() {
 
           {/* Formulaire */}
           <div className="w-full max-w-md">
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email avec peer */}
               <div className="relative h-14">
                 <AlternateEmailIcon className="login-icon-design" />
@@ -174,8 +163,7 @@ function Connexion() {
               {/* Bouton de soumission - CENTRÉ */}
               <div className="flex justify-center">
                 <button
-                  type="button"
-                  onClick={handleSubmit}
+                  type="submit"
                   disabled={loading}
                   className="login-button-design"
                 >
@@ -192,7 +180,7 @@ function Connexion() {
                   )}
                 </button>
               </div>
-            </div>
+            </form>
 
             {/* Lien inscription */}
             <p className="text-center text-gray-600 mt-8 text-sm">

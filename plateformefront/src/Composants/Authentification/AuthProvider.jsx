@@ -32,52 +32,21 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    try {
-      console.log("🔐 Connexion:", email);
+  try {
+    await loginUser(email, password);
 
-      // ✅ Nettoyer l'état actuel
-      setCurrentUser(null);
+    await fetchCurrentUser();
 
-      // ✅ Backend va automatiquement créer les cookies
-      const res = await loginUser(email, password);
+    return { success: true };
 
-      console.log("📦 Réponse:", {
-        hasUser: !!res?.data?.user,
-        email: res?.data?.user?.email,
-        statut: res?.data?.user?.statut
-      });
-
-      // ✅ Vérifier l'utilisateur dans la réponse
-      if (!res?.data?.user) {
-        console.error("❌ Pas d'utilisateur dans la réponse");
-        return { success: false, error: "Pas d'utilisateur" };
-      }
-
-      // ✅ Sauvegarder les tokens dans sessionStorage
-      if (res.data.token) {
-        sessionStorage.setItem("jwt_token", res.data.token);
-        console.log("✅ Token JWT sauvegardé (AuthProvider)");
-      }
-      if (res.data.refreshToken) {
-        sessionStorage.setItem("refresh_token", res.data.refreshToken);
-        console.log("✅ Refresh token sauvegardé (AuthProvider)");
-      }
-
-      // ✅ Mettre à jour l'état avec l'utilisateur reçu
-      setCurrentUser(res.data.user);
-
-      console.log("✅ Login réussi");
-      return { success: true, user: res.data.user };
-
-    } catch (error) {
-      console.error("❌ Erreur login:", error.response?.data || error.message);
-      setCurrentUser(null);
-      return {
-        success: false,
-        error: error.response?.data?.message || "Erreur de connexion"
-      };
-    }
-  };
+  } catch (error) {
+    setCurrentUser(null);
+    return {
+      success: false,
+      error: error.response?.data?.message || "Erreur de connexion"
+    };
+  }
+};
 
   const logout = async () => {
     try {
@@ -87,9 +56,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.warn("⚠️ Erreur déconnexion:", error);
     } finally {
-      // ✅ Nettoyer les tokens du sessionStorage
-      sessionStorage.removeItem("jwt_token");
-      sessionStorage.removeItem("refresh_token");
       setCurrentUser(null);
       console.log("✅ Déconnexion complète");
     }
