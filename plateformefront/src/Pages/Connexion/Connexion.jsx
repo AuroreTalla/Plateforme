@@ -7,7 +7,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SchoolIcon from '@mui/icons-material/School';
-import img from "../../assets/img1.jpeg"
+//import img from "../../assets/img1.jpeg"
 
 function Connexion() {
   const navigate = useNavigate();
@@ -63,8 +63,8 @@ function Connexion() {
         <div
           className="w-1/2 bg-cover bg-center bg-no-repeat relative hidden lg:block"
           style={{
-            //backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800')"
-            backgroundImage: `url(${img})`
+            backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800')"
+            //backgroundImage: `url(${img})`
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-800/30 to-purple-600/30"></div>
