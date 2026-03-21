@@ -71,8 +71,8 @@ function LandingPage() {
               </p>
             </div>
 
-            {/* Feature 2 */}
-            {/*<div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-blue-100">
+            {/* Feature 2 
+            <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-blue-100">
               <div className="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg">
                 <AssessmentIcon className="text-white" style={{ fontSize: 32 }} />
               </div>
