@@ -63,8 +63,9 @@ function Connexion() {
         <div
           className="w-1/2 bg-cover bg-center bg-no-repeat relative hidden lg:block"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800')"
+            //backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800')"
             //backgroundImage: `url(${img})`
+            backgroundImage: "url('/assets/img1.jpeg')"
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-800/30 to-purple-600/30"></div>
