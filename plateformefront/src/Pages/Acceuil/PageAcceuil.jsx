@@ -59,7 +59,7 @@ function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
             {/* Feature 1 */}
             <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-purple-100">
               <div className="bg-purple-600 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg">
