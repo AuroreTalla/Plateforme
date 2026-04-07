@@ -59,7 +59,7 @@ function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-purple-100">
               <div className="bg-purple-600 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg">
@@ -71,6 +71,16 @@ function LandingPage() {
               </p>
             </div>
 
+            {/* Feature 2 */}
+            <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-blue-100">
+              <div className="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                <AssessmentIcon className="text-white" style={{ fontSize: 32 }} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Suivi des progrès</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Tableaux de bord détaillés et analyses en temps réel pour suivre votre évolution.
+              </p>
+            </div>
 
             {/* Feature 3 */}
             <div className="bg-gradient-to-br from-pink-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-pink-100">
@@ -126,13 +136,18 @@ function LandingPage() {
             >
               Créer mon compte
             </button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="px-10 py-4 border-2 border-purple-600 text-purple-600 rounded-full font-semibold text-lg hover:bg-purple-50 transition-all duration-300"
+            >
+              Découvrir les cours
+            </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8 w-full">
-
+      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8 bottom-0 w-full">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col justify-center items-center">
             <div className="flex items-center space-x-4 mb-4">
