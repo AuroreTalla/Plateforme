@@ -29,59 +29,44 @@ function Inscription() {
   const toggleShowPassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      // Vérifier si l'utilisateur existe déjà
-      const exists = await userExists(email);
-      if (exists.data) {
-        setError("Cet email est déjà inscrit. Redirection vers la connexion...");
-        setTimeout(() => {
-          navigate("/connexion", { 
-            state: { 
-              email, 
-              message: "Vous avez déjà un compte, veuillez vous connecter" 
-            } 
-          });
-        }, 2000);
-        return;
-      }
-
-      // ✅ Créer le compte
-      const response = await inscription(name, email, password, statut);
-      
-      // ✅ Si demande professeur
-      if (response.data.demandeProfesseur) {
-        setSuccessMessage(
-          "Compte créé avec succès ! Votre demande de statut professeur a été envoyée à l'administrateur. " +
-          "Vous recevrez une notification par email une fois votre demande traitée. " +
-          "En attendant, vous pouvez vous connecter avec un accès élève."
-        );
-        
-        // Rediriger après 5 secondes
-        setTimeout(() => {
-          navigate("/activationcode", { 
-            state: { email, name, demandeProfesseur: true }, 
-            replace: true 
-          });
-        }, 5000);
-      } else {
-        // ✅ Inscription élève normale
-        navigate("/activationcode", { 
-          state: { email, name }, 
-          replace: true 
+  try {
+    const exists = await userExists(email);
+    if (exists.data) {
+      setError("Cet email est déjà inscrit. Redirection vers la connexion...");
+      setTimeout(() => {
+        navigate("/connexion", {
+          state: {
+            email,
+            message: "Vous avez déjà un compte, veuillez vous connecter"
+          }
         });
-      }
-
-    } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors de l'inscription");
-    } finally {
-      setLoading(false);
+      }, 2000);
+      return;
     }
-  };
+
+    const response = await inscription(name, email, password, statut);
+
+    // Pas de message ici : la demande professeur n'est pas encore confirmée,
+    // le compte n'est même pas encore activé. On informe seulement après activation.
+    navigate("/activationcode", {
+      state: {
+        email,
+        name,
+        demandeProfesseur: response.data.demandeProfesseur
+      },
+      replace: true
+    });
+
+  } catch (err) {
+    setError(err.response?.data?.message || "Erreur lors de l'inscription");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="h-screen flex items-center justify-center bg-[#f5faf7] overflow-hidden">

@@ -22,6 +22,8 @@ import {
   sendMessage,
   isConnected
 } from '../../ConfigBackEnd/WebSocketConfig';
+import { formatDate } from '../../ConfigBackEnd/FormatDate';
+
 
 
 function GroupeChat({
@@ -216,73 +218,6 @@ function GroupeChat({
     }
 
   };
-
-
-  //Format de la date
-  const formatDate = (dateString) => {
-    if (!dateString) {
-      return '';
-    }
-    if (/^\d{2}:\d{2}$/.test(dateString)) {
-      return dateString;
-    }
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
-      return dateString;
-    }
-
-    const today = new Date();
-    const yesterday = new Date(today);
-
-    yesterday.setDate(
-      today.getDate() - 1
-    );
-
-
-    if (
-      date.toDateString() ===
-      today.toDateString()
-    ) {
-
-      return date.toLocaleTimeString(
-        'fr-FR',
-        {
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      );
-
-    }
-
-
-    if (
-      date.toDateString() ===
-      yesterday.toDateString()
-    ) {
-
-      return `Hier ${date.toLocaleTimeString(
-        'fr-FR',
-        {
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      )}`;
-
-    }
-
-
-    return date.toLocaleDateString(
-      'fr-FR',
-      {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-      }
-    );
-
-  };
-
 
   // ============================================================
   // Chargement
@@ -649,11 +584,7 @@ function GroupeChat({
                                 : '#94a3b8'
                           }}
                         >
-
-                          {formatDate(
-                            message.dateEnvoie
-                          )}
-
+                          {formatDate(message.dateEnvoie)}
                         </Typography>
 
                       </Box>

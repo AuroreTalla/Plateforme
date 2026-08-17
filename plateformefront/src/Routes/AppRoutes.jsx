@@ -37,7 +37,8 @@ import MesDemandes from "../Pages/Demandes/MesDemandes";
 import UsersList from "../Pages/Admin/UsersList";
 import ForumsAdmin from "../Pages/Admin/ForumsAdmin";
 import { MatiereList, MatiereCreate } from "../Pages/Admin/Matiere/MatierePages";
-import { DemandesProf, DemandesMatieres } from "../Pages/Admin/Demandes/DemandesAdmin";
+import DemandesProf from "../Pages/Admin/Demandes/DemandesProf";
+import DemandesMatieres from "../Pages/Admin/Demandes/DemandesMatieres";
 
 const router = createBrowserRouter([
 

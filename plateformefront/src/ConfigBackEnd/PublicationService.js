@@ -1,8 +1,8 @@
 import { api } from "./Api";
 
 // Récupérer les publications d'un groupe
-export const getPublicationsByGroupe = (groupeId) =>
-  api.get(`/publications/groupe/${groupeId}`);
+export const getPublicationsByGroupe = (groupeId, { search = '', page = 0, size = 10 } = {}) =>
+  api.get(`/publications/groupe/${groupeId}`, { params: { search, page, size } });
 
 // Récupérer les réponses d'une publication
 export const getReponsesByPublication = (publicationId) =>
