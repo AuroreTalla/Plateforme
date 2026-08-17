@@ -44,4 +44,16 @@ public class ControlleurAdvice {
         return new ErrorEntity("CODE_INVALID", ex.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+@ExceptionHandler(SecurityException.class)
+public @ResponseBody ErrorEntity handleSecurity(SecurityException ex) {
+    return new ErrorEntity("FORBIDDEN", ex.getMessage());
+}
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+@ExceptionHandler(RuntimeException.class)
+public @ResponseBody ErrorEntity handleRuntime(RuntimeException ex) {
+    return new ErrorEntity("NOT_FOUND", ex.getMessage());
+}
+
 }

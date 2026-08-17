@@ -86,7 +86,7 @@ CREATE TABLE publication (
     user_id BIGINT NOT NULL,
     groupe_id BIGINT NOT NULL,
     titre VARCHAR(255) NOT NULL,
-    detail VARCHAR(5000),
+    content TEXT,
     date_publication DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     statut ENUM('NON_RESOLUE', 'RESOLUE') NOT NULL DEFAULT 'NON_RESOLUE',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -97,10 +97,21 @@ CREATE TABLE reponse (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     publication_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    contenu VARCHAR(5000) NOT NULL,
+    content TEXT NOT NULL,
+    validee_par_user_id BIGINT NULL,
     date_reponse DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    date_validation DATETIME(6) NULL,
     est_solution_proposee BOOLEAN NOT NULL DEFAULT FALSE,
     validee_par_admin BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (publication_id) REFERENCES publication(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (validee_par_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
+CREATE INDEX idx_publication_groupe ON publication(groupe_id);
+CREATE INDEX idx_publication_statut ON publication(statut);
+CREATE INDEX idx_reponse_publication ON reponse(publication_id);
+/*Un index est une structure que MySQL construit sur une ou plusieurs colonnes d'une table donnée, 
+pour accélérer les recherches/filtres sur cette colonne — un peu comme l'index alphabétique à la fin 
+d'un livre : sans lui, MySQL doit lire ligne par ligne 
+toute la table (table scan) pour trouver ce qu'il cherche ; avec lui, il saute directement aux bonnes lignes.*/

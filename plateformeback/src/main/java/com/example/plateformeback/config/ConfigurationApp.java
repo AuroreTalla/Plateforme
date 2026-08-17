@@ -50,6 +50,8 @@ public class ConfigurationApp {
                 ).permitAll()
                 .requestMatchers("/users/**").permitAll()
                 .requestMatchers("/groupes/**").authenticated()
+                .requestMatchers("/reponse/**").permitAll()
+                .requestMatchers("/publication/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/app/**").permitAll()
@@ -74,7 +76,7 @@ public class ConfigurationApp {
                 "http://127.0.0.1:5173"
         ));
 
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

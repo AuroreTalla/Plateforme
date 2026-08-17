@@ -2,10 +2,7 @@ package com.example.plateformeback.user;
 
 import com.example.plateformeback.enums.TypeStatut;
 import lombok.Builder;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 @Builder
 public record UserDTO(
         Long id,
