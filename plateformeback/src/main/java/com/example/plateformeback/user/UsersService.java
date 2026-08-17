@@ -1,6 +1,7 @@
 package com.example.plateformeback.user;
 
 import com.example.plateformeback.dto.ActivationDTO;
+import com.example.plateformeback.user.Professeur.ProfService;
 import com.example.plateformeback.verificationEmail.EmailVerification;
 import com.example.plateformeback.verificationEmail.EmailVerificationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,33 +34,40 @@ public class UsersService implements UserDetailsService {
 
     @Transactional
     public Users activation(ActivationDTO activationDTO) {
-        String code = activationDTO.getCode();
-        String email = activationDTO.getEmail();
+    String code = activationDTO.getCode();
+    String email = activationDTO.getEmail();
 
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Code manquant");
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email manquant");
-        }
-
-        EmailVerification emailVerification = this.emailVerificationService.lireEnFonctionDuCode(code);
-
-        if (!emailVerification.getUsers().getEmail().equals(email)) {
-            throw new IllegalArgumentException("Email et code ne correspondent pas");
-        }
-
-        if (Instant.now().isAfter(emailVerification.getDateExpiration())) {
-            throw new IllegalArgumentException("Votre code est expiré");
-        }
-
-        Users userActive = this.usersRepository.findById(emailVerification.getUsers().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Utilisateur inconnu"));
-
-        userActive.setEmailVerifie(true);
-        emailVerificationService.deleteVerification(emailVerification);
-        return this.usersRepository.save(userActive);
+    if (code == null || code.isBlank()) {
+        throw new IllegalArgumentException("Code manquant");
     }
+    if (email == null || email.isBlank()) {
+        throw new IllegalArgumentException("Email manquant");
+    }
+
+    EmailVerification emailVerification = this.emailVerificationService.lireEnFonctionDuCode(code);
+
+    if (!emailVerification.getUsers().getEmail().equals(email)) {
+        throw new IllegalArgumentException("Email et code ne correspondent pas");
+    }
+
+    if (Instant.now().isAfter(emailVerification.getDateExpiration())) {
+        throw new IllegalArgumentException("Votre code est expiré");
+    }
+
+    Users userActive = this.usersRepository.findById(emailVerification.getUsers().getId())
+            .orElseThrow(() -> new EntityNotFoundException("Utilisateur inconnu"));
+
+    userActive.setEmailVerifie(true);
+    emailVerificationService.deleteVerification(emailVerification);
+    Users savedUser = this.usersRepository.save(userActive);
+
+    // Notifier les admins uniquement une fois le compte réellement activé
+    if (savedUser.isDemandeProfesseur()) {
+        profService.notifierAdminDemandeProfesseur(savedUser);
+    }
+
+    return savedUser;
+}
 
     /**
      * Délègue la notification à ProfService

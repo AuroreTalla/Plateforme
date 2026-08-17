@@ -12,11 +12,14 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -29,6 +32,12 @@ public class ReponseControlleur {
     private final UsersService usersService;
     private final PublicationService publicationService;
     private final SimpMessagingTemplate messagingTemplate;
+
+    @GetMapping("/publication/{publicationId}")
+    public List<ReponseDTO> getReponsesByPublication(@PathVariable Long publicationId) {
+        Publication publication = publicationService.findById(publicationId);
+        return reponseService.getreponsesByPublicationDTO(publication);
+    }
 
     @Transactional
     @MessageMapping("/sendreponse/{publicationId}")

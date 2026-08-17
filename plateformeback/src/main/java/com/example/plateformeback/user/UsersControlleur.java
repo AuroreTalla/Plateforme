@@ -48,9 +48,6 @@ public class UsersControlleur {
 
             usersService.inscription(users);
 
-            // ✅ Envoyer une notification à l'admin
-            usersService.notifierAdminDemandeProfesseur(users);
-
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "message", "Compte créé avec succès. Votre demande de statut professeur sera examinée par un administrateur.",
                     "statut", TypeStatut.ELEVE.name(),  // ✅ .name() pour retourner le String

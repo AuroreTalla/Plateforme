@@ -1,6 +1,8 @@
-package com.example.plateformeback.user;
+package com.example.plateformeback.user.Professeur;
 
 import com.example.plateformeback.enums.TypeStatut;
+import com.example.plateformeback.user.Users;
+import com.example.plateformeback.user.UsersRepository;
 import com.example.plateformeback.verificationEmail.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
