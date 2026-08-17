@@ -1,8 +1,5 @@
 package com.example.plateformeback.groupe;
-
-import com.example.plateformeback.message.Message;
 import com.example.plateformeback.user.Users;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

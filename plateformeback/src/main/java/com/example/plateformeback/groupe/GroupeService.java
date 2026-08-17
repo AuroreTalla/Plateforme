@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,43 +25,8 @@ public class GroupeService {
         return groupeRepository.save(groupe);
     }
 
-    @Transactional
-    public Groupe joinGroupe(String nom, Users user) {
-        Groupe groupe = groupeRepository.findByNom(nom)
-                .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
-
-        // ✅ Utiliser == au lieu de equals() pour les primitifs
-        boolean isMember = groupe.getMembres().stream()
-                .anyMatch(membre -> membre.getId() == user.getId());
-
-        if (!isMember) {
-            log.info("➕ Ajout membre: {} (ID={}) au groupe: {}",
-                    user.getEmail(), user.getId(), nom);
-
-            groupe.getMembres().add(user);
-
-            // ✅ Sauvegarder et forcer le flush
-            groupe = groupeRepository.saveAndFlush(groupe);
-
-            // ✅ Vider le cache Hibernate
-            entityManager.clear();
-
-            // ✅ Recharger le groupe pour vérifier
-            groupe = groupeRepository.findByNom(nom)
-                    .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
-
-            log.info("✅ Membre persisté. Membres actuels: {}",
-                    groupe.getMembres().stream()
-                            .map(m -> m.getEmail() + " (ID=" + m.getId() + ")")
-                            .toList());
-
-        } else {
-            log.info("⚠️ Utilisateur {} (ID={}) déjà membre de {}",
-                    user.getEmail(), user.getId(), nom);
-        }
-
-        return groupe;
-    }
+    // Méthode joinGroupe supprimée pour ne plus gérer l’adhésion
+    // La logique est retirée pour éviter tout blocage
 
     public List<GroupeDTO> getAllGroupesDTO(Users currentUser) {
         List<Groupe> groupes = groupeRepository.findAll();
@@ -71,20 +35,20 @@ public class GroupeService {
                 .toList();
     }
 
-    public GroupeDTO findByNomDTO(String nom, Users currentUser) {
-        return groupeRepository.findByNom(nom)
+    public GroupeDTO findByIdDTO(Long id, Users currentUser) {
+        return groupeRepository.findById(id)
                 .map(g -> GroupeDTO.fromEntity(g, currentUser))
                 .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
     }
 
-    public List<MessageDTO> getMessagesDTO(String nom, Pageable pageable) {
-        return groupeRepository.findMessagesByGroupeNom(nom, pageable).stream()
+    public List<MessageDTO> getMessagesDTO(Long id, Pageable pageable) {
+        return groupeRepository.findMessagesByGroupeId(id, pageable).stream()
                 .map(MessageDTO::fromEntity)
                 .toList();
     }
 
-    public MessageDTO getLastMessageDTO(String nom) {
-        Groupe groupe = groupeRepository.findByNom(nom)
+    public MessageDTO getLastMessageDTO(Long id) {
+        Groupe groupe = groupeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
 
         Message last = messageRepository.findTop1ByGroupeOrderByDateEnvoieDesc(groupe);
@@ -96,46 +60,21 @@ public class GroupeService {
         return MessageDTO.fromEntity(last);
     }
 
-    public Groupe findByNom(String nom) {
-        return groupeRepository.findByNom(nom)
-                .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
+    public Groupe findById(Long id) {
+        log.info("🔎 Recherche du groupe : '{}'", id);
+
+    List<Groupe> groupes = groupeRepository.findAll();
+
+    groupes.forEach(g ->
+            log.info("📚 Groupe BD -> ID={}, NOM='{}'",
+                    g.getId(),
+                    g.getNom())
+    );
+
+        return groupeRepository.findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException("Groupe non trouvé : " + id));
     }
 
-    // ✅ Correction avec ==
-    public boolean isMember(String nom, Users user) {
-        Groupe groupe = groupeRepository.findByNom(nom)
-                .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
-
-        boolean isMember = groupe.getMembres().stream()
-                .anyMatch(membre -> membre.getId() == user.getId());  // ✅ == au lieu de .equals()
-
-        List<String> membresInfo = groupe.getMembres().stream()
-                .map(m -> m.getEmail() + " (ID=" + m.getId() + ")")
-                .toList();
-
-        log.info("🔍 Vérification membre {} (ID={}) pour groupe {} : {} | Membres: {}",
-                user.getEmail(), user.getId(), nom, isMember, membresInfo);
-
-        return isMember;
-    }
-
-    // ✅ Correction avec ==
-    public void checkUserMember(Groupe groupe, Users user) {
-        Groupe refreshedGroupe = groupeRepository.findById(groupe.getId())
-                .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
-
-        boolean isMember = refreshedGroupe.getMembres().stream()
-                .anyMatch(membre -> membre.getId() == user.getId());  // ✅ == au lieu de .equals()
-
-        if (!isMember) {
-            log.error("❌ Utilisateur {} (ID={}) n'est PAS membre de {} (ID={})",
-                    user.getEmail(), user.getId(),
-                    refreshedGroupe.getNom(), refreshedGroupe.getId());
-            throw new IllegalArgumentException("L'utilisateur n'est pas membre du groupe");
-        }
-
-        log.info("✅ Utilisateur {} (ID={}) est membre de {} (ID={})",
-                user.getEmail(), user.getId(),
-                refreshedGroupe.getNom(), refreshedGroupe.getId());
-    }
+    // Les méthodes isMember et checkUserMember sont commentées car inutilisées
 }

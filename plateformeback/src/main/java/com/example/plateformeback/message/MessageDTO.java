@@ -1,8 +1,6 @@
 package com.example.plateformeback.message;
 
 import com.example.plateformeback.user.UserDTO;
-
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public record MessageDTO(
@@ -10,17 +8,19 @@ public record MessageDTO(
         String content,
         String dateEnvoie,
         UserDTO user,
-        String groupeNom
+        Long groupeId
 ) {
     public static MessageDTO fromEntity(Message message) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        return new MessageDTO(
-                message.getId(),
-                message.getContent(),
-                message.getDateEnvoie().format(formatter),
-                UserDTO.fromEntity(message.getSender()),
-                message.getGroupe().getNom()
-        );
-    }
+    DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    return new MessageDTO(
+            message.getId(),
+            message.getContent(),
+            message.getDateEnvoie().format(formatter),
+            UserDTO.fromEntity(message.getSender()),
+            message.getGroupe().getId()
+    );
+}
 }

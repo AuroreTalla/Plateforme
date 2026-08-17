@@ -3,7 +3,6 @@ package com.example.plateformeback.user;
 import com.example.plateformeback.enums.TypeStatut;
 import com.example.plateformeback.groupe.Groupe;
 import com.example.plateformeback.message.Message;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -14,8 +13,6 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 

@@ -42,12 +42,18 @@ public class ConfigurationApp {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // ✅ CORRIGÉ
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/users/**").permitAll()
-                        .requestMatchers("/groupes/**").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/app/**").permitAll()
-                        .anyRequest().authenticated()
+                .requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/api-docs/**",
+                        "/v3/api-docs/**"
+                ).permitAll()
+                .requestMatchers("/users/**").permitAll()
+                .requestMatchers("/groupes/**").authenticated()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/app/**").permitAll()
+                .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
