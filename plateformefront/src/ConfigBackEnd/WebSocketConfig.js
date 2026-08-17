@@ -201,3 +201,144 @@ export const getStompClient = () => {
 export const isConnected = () => {
   return !!( stompClient && stompClient.connected);
 };
+
+/* ============================================================
+   PUBLICATIONS
+============================================================ */
+
+/* ABONNEMENT AUX PUBLICATIONS D'UN GROUPE */
+export const subscribeToPublications = (groupeId, callback) => {
+
+  if (!stompClient || !stompClient.connected) {
+    console.warn('⚠️ WebSocket non connecté');
+    return null;
+  }
+
+  if (!groupeId) {
+    console.error('❌ ID du groupe manquant');
+    return null;
+  }
+
+  console.log(`📡 Abonnement aux publications du groupe ID : ${groupeId}`);
+  const destination = `/topic/groupe/${groupeId}`;
+  console.log('📍 Destination abonnement :', destination);
+
+  return stompClient.subscribe(destination, (message) => {
+    console.log('📨 Publication WebSocket reçue:', message.body);
+
+    try {
+      const publicationData = JSON.parse(message.body);
+      callback(publicationData);
+    } catch (error) {
+      console.error('❌ Erreur parsing publication WebSocket:', error);
+    }
+  });
+};
+
+/* ENVOI D'UNE PUBLICATION */
+export const sendPublication = (groupeId, titre, content, userEmail) => {
+  if (!stompClient || !stompClient.connected) {
+    console.error('❌ Impossible d\'envoyer la publication : WebSocket non connecté');
+    return false;
+  }
+
+  if (!groupeId) {
+    console.error('❌ ID du groupe manquant');
+    return false;
+  }
+
+  if (!userEmail) {
+    console.error('❌ Email utilisateur manquant');
+    return false;
+  }
+
+  if (!titre?.trim() || !content?.trim()) {
+    console.error('❌ Titre ou contenu vide');
+    return false;
+  }
+
+  console.log('📤 Envoi publication:', { groupeId, titre, content, userEmail });
+
+  const destination = `/app/sendpublication/${groupeId}`;
+  console.log('📍 Destination STOMP:', destination);
+
+  stompClient.publish({
+    destination,
+    body: JSON.stringify({
+      titre: titre.trim(),
+      content: content.trim(),
+      userEmail
+    })
+  });
+  return true;
+};
+
+/* ============================================================
+   RÉPONSES
+============================================================ */
+
+/* ABONNEMENT AUX RÉPONSES D'UNE PUBLICATION */
+export const subscribeToReponses = (publicationId, callback) => {
+
+  if (!stompClient || !stompClient.connected) {
+    console.warn('⚠️ WebSocket non connecté');
+    return null;
+  }
+
+  if (!publicationId) {
+    console.error('❌ ID de la publication manquant');
+    return null;
+  }
+
+  console.log(`📡 Abonnement aux réponses de la publication ID : ${publicationId}`);
+  const destination = `/topic/publication/${publicationId}`;
+  console.log('📍 Destination abonnement :', destination);
+
+  return stompClient.subscribe(destination, (message) => {
+    console.log('📨 Réponse WebSocket reçue:', message.body);
+
+    try {
+      const reponseData = JSON.parse(message.body);
+      callback(reponseData);
+    } catch (error) {
+      console.error('❌ Erreur parsing réponse WebSocket:', error);
+    }
+  });
+};
+
+/* ENVOI D'UNE RÉPONSE */
+export const sendReponse = (publicationId, content, userEmail) => {
+  if (!stompClient || !stompClient.connected) {
+    console.error('❌ Impossible d\'envoyer la réponse : WebSocket non connecté');
+    return false;
+  }
+
+  if (!publicationId) {
+    console.error('❌ ID de la publication manquant');
+    return false;
+  }
+
+  if (!userEmail) {
+    console.error('❌ Email utilisateur manquant');
+    return false;
+  }
+
+  if (!content?.trim()) {
+    console.error('❌ Réponse vide');
+    return false;
+  }
+
+  console.log('📤 Envoi réponse:', { publicationId, content, userEmail });
+
+  const destination = `/app/sendreponse/${publicationId}`;
+  console.log('📍 Destination STOMP:', destination);
+
+  stompClient.publish({
+    destination,
+    body: JSON.stringify({
+      content: content.trim(),
+      userEmail
+    })
+  });
+  return true;
+};
