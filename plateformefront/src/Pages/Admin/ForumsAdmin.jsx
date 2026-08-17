@@ -49,7 +49,8 @@ export default function ForumsAdmin() {
     if (selectedGroupe) {
         return (
             <GroupeChat
-                groupeNom={selectedGroupe}
+                groupeId={selectedGroupe.id}
+                groupeNom={selectedGroupe.nom}
                 onBack={() => setSelectedGroupe(null)}
                 wsConnected={wsConnected}
             />

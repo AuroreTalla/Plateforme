@@ -1,8 +1,8 @@
-
 import { useContext, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AuthContext } from "../Authentification/AuthContext";
 import SideBar from "../SideBar/SideBar.jsx";
+import { GroupesProvider } from "../Groupe/GroupProvider.jsx";
 
 export default function DashboardLayout() {
   const { currentUser } = useContext(AuthContext);
@@ -11,22 +11,16 @@ export default function DashboardLayout() {
   if (!currentUser) return null;
 
   return (
-    <div className="flex h-[calc(100vh-80px)]">
-      {/* Sidebar */}
-      <SideBar isOpen={isOpen} setIsOpen={setIsOpen} user={currentUser} />
+    <GroupesProvider>
+      <div className="flex h-full min-h-0">
+        <SideBar isOpen={isOpen} setIsOpen={setIsOpen} user={currentUser} />
 
-      {/* Contenu Principal */}
-      <main 
-        className={`
-          flex-1 bg-gray-50 overflow-auto transition-all duration-300 mt-20
-          ${isOpen ? "lg:ml-80" : "lg:ml-20"}
-        `}
-      >
-        <div className="p-6">
-          <Outlet />
-        </div>
-      </main>
-    </div>
+        <main className="flex-1 min-h-0 bg-gray-50 overflow-y-auto transition-all duration-300">
+          <div className="h-full flex flex-col p-6">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </GroupesProvider>
   );
 }
-

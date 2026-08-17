@@ -54,10 +54,6 @@ export const SideBarItems = {
       text: "Forums",
       hasSubMenu: true,
       subItems: [
-        { id: "mathF", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/forum/Mathématiques" },
-        { id: "physF", icon: ScienceIcon, text: "Physique", path: "/dashboard/forum/Physique" },
-        { id: "chimF", icon: BiotechIcon, text: "Chimie", path: "/dashboard/forum/Chimie" },
-        //{ id: "forumsGen", icon: ForumIcon, text: "Forums Généraux", path: "/dashboard/forum/generaux" },
       ],
     },
     {
@@ -109,10 +105,6 @@ export const SideBarItems = {
       text: "Forums",
       hasSubMenu: true,
       subItems: [
-        { id: "mathF", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/forum/Mathématiques" },
-        { id: "physF", icon: ScienceIcon, text: "Physique", path: "/dashboard/forum/Physique" },
-        { id: "chimF", icon: BiotechIcon, text: "Chimie", path: "/dashboard/forum/Chimie" },
-        //{ id: "forumsGen", icon: ForumIcon, text: "Forums Généraux", path: "/dashboard/forum/generaux" },
       ],
     },
     {
@@ -210,3 +202,18 @@ export const SideBarItems = {
     },
   ],
 };
+
+const matiereIcons = {
+  "Mathématiques": CalculateIcon,
+  "Physique": ScienceIcon,
+  "Chimie": BiotechIcon,
+};
+
+export function buildForumSubItems(groupes) {
+  return groupes.map((groupe) => ({
+    id: `forum-${groupe.id}`,
+    icon: matiereIcons[groupe.nom] || ChatIcon,
+    text: groupe.nom,
+    path: `/dashboard/forum/${groupe.id}`,
+  }));
+}
