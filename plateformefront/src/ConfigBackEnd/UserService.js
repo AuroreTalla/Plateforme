@@ -18,5 +18,9 @@ export const getCurrentUser = () => api.get("/users/me");
 
 export const getUserByEmail = (email) => api.get(`/users/email/${email}`);
 
+export const getUserByName = (name) => api.get(`/users/name/${name}`);
+
 export const userExists = (email) =>
   api.get("/users/exists", { params: { email } });
+
+export const getAllUsers = () => api.get("/users");

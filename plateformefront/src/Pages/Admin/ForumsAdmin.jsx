@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, Card, CardContent, CardActionArea, Typography, Avatar, Chip, CircularProgress, TextField, InputAdornment, Grid, Alert, Fade } from '@mui/material';
+import { Box, Card, CardContent, CardActionArea, Typography, Avatar, CircularProgress, TextField, InputAdornment, Grid, Alert, Fade } from '@mui/material';
+import {
+    Button, IconButton} from '@mui/material';
 import { Search as SearchIcon, Group as GroupIcon, Chat as ChatIcon } from '@mui/icons-material';
 import { getAllGroupes } from '../../ConfigBackEnd/GroupService';
-import GroupeChat from '../../Pages/Forum/GroupeChat';
+import PublicationList from '../../Pages/Forum/PublicationList';
 import { connectWebSocket, disconnectWebSocket } from '../../ConfigBackEnd/WebSocketConfig';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { supprimerMatiere } from '../../ConfigBackEnd/MatiereService';
+import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 
 export default function ForumsAdmin() {
     const [groupes, setGroupes] = useState([]);
@@ -13,6 +19,33 @@ export default function ForumsAdmin() {
     const [error, setError] = useState(null);
     const [wsConnected, setWsConnected] = useState(false);
     const wsInitialized = useRef(false);
+    const { matieres, refetch } = useMatieres();
+const [groupeASupprimer, setGroupeASupprimer] = useState(null);
+const [deleting, setDeleting] = useState(false);
+
+const handleConfirmerSuppression = async () => {
+  if (!groupeASupprimer) return;
+
+  // Retrouver la matière liée à ce groupe (même nom, comme convenu)
+  const matiere = matieres.find((m) => m.groupeId === groupeASupprimer.id);
+  if (!matiere) {
+    setError("Aucune matière associée à ce groupe, suppression impossible depuis cet écran.");
+    setGroupeASupprimer(null);
+    return;
+  }
+
+  setDeleting(true);
+  try {
+    await supprimerMatiere(matiere.id);
+    await Promise.all([loadGroupes(), refetch()]);
+    setGroupeASupprimer(null);
+  } catch (e) {
+    console.error('❌ Erreur suppression matière :', e);
+    setError(e.response?.data?.message || "Erreur lors de la suppression.");
+  } finally {
+    setDeleting(false);
+  }
+};
 
     useEffect(() => {
         loadGroupes();
@@ -48,14 +81,17 @@ export default function ForumsAdmin() {
 
     if (selectedGroupe) {
         return (
-            <GroupeChat
-                groupeId={selectedGroupe.id}
-                groupeNom={selectedGroupe.nom}
-                onBack={() => setSelectedGroupe(null)}
-                wsConnected={wsConnected}
-            />
+            <Box sx={{ height: '100%' }}>
+                <PublicationList
+                    groupeId={selectedGroupe.id}
+                    wsConnected={wsConnected}
+                    onBack={() => setSelectedGroupe(null)}
+                />
+            </Box>
         );
     }
+
+    // ... reste du composant identique, sauf la ligne du clic :
 
     if (loading) {
         return (
@@ -66,6 +102,8 @@ export default function ForumsAdmin() {
     }
 
     return (
+
+    
         <Box sx={{ p: 4, bgcolor: '#f8fafc', minHeight: '100vh' }}>
             <Box sx={{ mb: 6 }}>
                 <Typography variant="h4" fontWeight="bold" sx={{ mb: 2, color: '#4c1d95' }}>
@@ -113,7 +151,7 @@ export default function ForumsAdmin() {
                                 '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 10px 30px -10px rgba(124, 58, 237, 0.2)', borderColor: '#7c3aed' }
                             }}>
                                 <CardActionArea
-                                    onClick={() => setSelectedGroupe(groupe.nom)}
+                                    onClick={() => setSelectedGroupe(groupe)}
                                     sx={{ height: '100%', p: 1 }}
                                 >
                                     <CardContent>
@@ -123,11 +161,6 @@ export default function ForumsAdmin() {
                                             </Avatar>
                                             <Box sx={{ flexGrow: 1 }}>
                                                 <Typography variant="h6" fontWeight="bold" color="#1e293b">{groupe.nom}</Typography>
-                                                <Chip
-                                                    label={`${groupe.nombreMembres || 0} membres`}
-                                                    size="small"
-                                                    sx={{ mt: 0.5, bgcolor: '#f1f5f9', color: '#64748b', fontWeight: 600 }}
-                                                />
                                             </Box>
                                         </Box>
                                         <Typography variant="body2" sx={{
@@ -141,12 +174,24 @@ export default function ForumsAdmin() {
                                         }}>
                                             {groupe.description || "Aucune description disponible."}
                                         </Typography>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', pt: 2, borderTop: '1px solid #f1f5f9' }}>
-                                            <ChatIcon sx={{ fontSize: 18, mr: 1, color: '#7c3aed' }} />
-                                            <Typography variant="body2" color="#7c3aed" fontWeight="bold">
-                                                Accéder au chat
-                                            </Typography>
-                                        </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', pt: 2, borderTop: '1px solid #f1f5f9', justifyContent: 'space-between' }}>
+  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <ChatIcon sx={{ fontSize: 18, mr: 1, color: '#7c3aed' }} />
+    <Typography variant="body2" color="#7c3aed" fontWeight="bold">
+      Accéder au chat
+    </Typography>
+  </Box>
+  <IconButton
+    size="small"
+    onClick={(e) => {
+      e.stopPropagation();
+      setGroupeASupprimer(groupe);
+    }}
+    sx={{ color: '#ef4444' }}
+  >
+    <DeleteIcon fontSize="small" />
+  </IconButton>
+</Box>
                                     </CardContent>
                                 </CardActionArea>
                             </Card>
@@ -162,6 +207,29 @@ export default function ForumsAdmin() {
                     </Grid>
                 )}
             </Grid>
+
+            <Dialog open={!!groupeASupprimer} onClose={() => setGroupeASupprimer(null)}>
+  <DialogTitle>Supprimer cette matière ?</DialogTitle>
+  <DialogContent>
+    <Typography>
+      Ceci supprimera définitivement <strong>{groupeASupprimer?.nom}</strong>,
+      son forum, ses cours et ses exercices. Cette action est irréversible.
+    </Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setGroupeASupprimer(null)} disabled={deleting}>
+      Annuler
+    </Button>
+    <Button
+      onClick={handleConfirmerSuppression}
+      disabled={deleting}
+      color="error"
+      variant="contained"
+    >
+      {deleting ? <CircularProgress size={20} color="inherit" /> : 'Supprimer'}
+    </Button>
+  </DialogActions>
+</Dialog>
         </Box>
     );
 }

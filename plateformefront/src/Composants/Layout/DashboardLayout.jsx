@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { AuthContext } from "../Authentification/AuthContext";
 import SideBar from "../SideBar/SideBar.jsx";
 import { GroupesProvider } from "../Groupe/GroupProvider.jsx";
+import { MatiereProvider } from "../Matiere/MatiereProvider.jsx";
 
 export default function DashboardLayout() {
   const { currentUser } = useContext(AuthContext);
@@ -12,6 +13,7 @@ export default function DashboardLayout() {
 
   return (
     <GroupesProvider>
+      <MatiereProvider>
       <div className="flex h-full min-h-0">
         <SideBar isOpen={isOpen} setIsOpen={setIsOpen} user={currentUser} />
 
@@ -21,6 +23,7 @@ export default function DashboardLayout() {
           </div>
         </main>
       </div>
+      </MatiereProvider>
     </GroupesProvider>
   );
 }

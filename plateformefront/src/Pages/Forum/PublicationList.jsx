@@ -1,7 +1,9 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
-import { Box, Typography, Card, CardActionArea, CardContent, Chip, Button, CircularProgress, TextField, Pagination, InputAdornment } from '@mui/material';
+import { Box, Typography, Card, CardActionArea, CardContent, Chip, Button, CircularProgress, 
+  TextField, Pagination, InputAdornment, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AuthContext } from '../../Composants/Authentification/AuthContext';
 import { getPublicationsByGroupe } from '../../ConfigBackEnd/PublicationService';
 import { subscribeToPublications, sendPublication } from '../../ConfigBackEnd/WebSocketConfig';
@@ -11,7 +13,7 @@ import { formatDate } from '../../ConfigBackEnd/FormatDate';
 
 const PAGE_SIZE = 10;
 
-function PublicationList({ groupeId, wsConnected  }) {
+function PublicationList({ groupeId, wsConnected, onBack  }) {
   const { currentUser } = useContext(AuthContext);
 
   const [publications, setPublications] = useState([]);
@@ -87,19 +89,26 @@ function PublicationList({ groupeId, wsConnected  }) {
   return (
     <Box sx={{ p: 3, height: '100%', overflow: 'auto' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h5" fontWeight="bold" sx={{ color: '#4c1d95' }}>
-          Publications
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setShowForm(true)}
-          disabled={!wsConnected}
-          sx={{ bgcolor: '#7c3aed', '&:hover': { bgcolor: '#6d28d9' } }}
-        >
-          Nouvelle publication
-        </Button>
-      </Box>
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    {onBack && (
+      <IconButton onClick={onBack}>
+        <ArrowBackIcon />
+      </IconButton>
+    )}
+    <Typography variant="h5" fontWeight="bold" sx={{ color: '#4c1d95' }}>
+      Publications
+    </Typography>
+  </Box>
+  <Button
+    variant="contained"
+    startIcon={<AddIcon />}
+    onClick={() => setShowForm(true)}
+    disabled={!wsConnected}
+    sx={{ bgcolor: '#7c3aed', '&:hover': { bgcolor: '#6d28d9' } }}
+  >
+    Nouvelle publication
+  </Button>
+</Box>
 
       <TextField
         fullWidth
