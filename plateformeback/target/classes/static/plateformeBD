@@ -9,11 +9,19 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     statut ENUM('ELEVE', 'PROFESSEUR', 'ADMIN') DEFAULT 'ELEVE',
-    demande_professeur TINYINT(1) DEFAULT 0,
     email_verifie TINYINT(1) DEFAULT 0,
     date_inscription DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     lastseen DATETIME(6)
 ) ENGINE=InnoDB;
+
+CREATE TABLE demandeProfessuer(
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    statut ENUM('EN_ATTENTE', 'VALIDEE', 'REFUSEE', 'REVOQUEE') DEFAULT 'EN_ATTENTE',
+    user_id BIGINT NOT NULL,
+    date_validation DATETIME(6) NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 
 -- Table email_verification
 CREATE TABLE email_verification (
@@ -49,21 +57,6 @@ CREATE TABLE jwt (
     FOREIGN KEY (refresh_token_id) REFERENCES refresh_token(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Table groupe
-CREATE TABLE groupe (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(255) NOT NULL UNIQUE
-) ENGINE=InnoDB;
-
--- Table many-to-many users <-> groupe
-CREATE TABLE groupe_users (
-    user_id BIGINT NOT NULL,
-    groupe_id BIGINT NOT NULL,
-    PRIMARY KEY(user_id, groupe_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (groupe_id) REFERENCES groupe(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
 -- Table message
 CREATE TABLE message (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -74,12 +67,6 @@ CREATE TABLE message (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (groupe_id) REFERENCES groupe(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
--- Insertion de groupes de base
-INSERT INTO groupe (nom) VALUES
-('Mathématiques'),
-('Physique'),
-('Chimie');
 
 CREATE TABLE publication (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -115,3 +102,60 @@ CREATE INDEX idx_reponse_publication ON reponse(publication_id);
 pour accélérer les recherches/filtres sur cette colonne — un peu comme l'index alphabétique à la fin 
 d'un livre : sans lui, MySQL doit lire ligne par ligne 
 toute la table (table scan) pour trouver ce qu'il cherche ; avec lui, il saute directement aux bonnes lignes.*/
+
+-- Table groupe
+CREATE TABLE groupe (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+-- Insertion de groupes de base
+INSERT INTO groupe (nom) VALUES
+('Mathématiques'),
+('Physique'),
+('Chimie');
+
+-- Table many-to-many users <-> groupe
+CREATE TABLE groupe_users (
+    user_id BIGINT NOT NULL,
+    groupe_id BIGINT NOT NULL,
+    PRIMARY KEY(user_id, groupe_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (groupe_id) REFERENCES groupe(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE matiere (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    groupe_id BIGINT NOT NULL UNIQUE,
+    FOREIGN KEY (groupe_id) REFERENCES groupe(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+INSERT INTO matiere (nom, description, groupe_id)
+SELECT nom, description, id FROM groupe WHERE nom IN ('Mathématiques', 'Physique', 'Chimie');
+
+CREATE TABLE cours (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    matiere_id BIGINT NOT NULL,
+    titre VARCHAR(255) NOT NULL,
+    type ENUM('TEXTE', 'IMAGE', 'VIDEO') NOT NULL DEFAULT 'TEXTE',
+    contenu TEXT,
+    media_url VARCHAR(500),
+    ordre INT NOT NULL DEFAULT 0,
+    date_creation DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    FOREIGN KEY (matiere_id) REFERENCES matiere(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE exercice (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    matiere_id BIGINT NOT NULL,
+    titre VARCHAR(255) NOT NULL,
+    type ENUM('TEXTE', 'IMAGE', 'VIDEO') NOT NULL DEFAULT 'TEXTE',
+    contenu TEXT,
+    media_url VARCHAR(500),
+    ordre INT NOT NULL DEFAULT 0,
+    date_creation DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    FOREIGN KEY (matiere_id) REFERENCES matiere(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_cours_matiere ON cours(matiere_id);
+CREATE INDEX idx_exercice_matiere ON exercice(matiere_id);

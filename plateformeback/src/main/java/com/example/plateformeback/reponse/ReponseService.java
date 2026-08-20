@@ -1,6 +1,6 @@
 package com.example.plateformeback.reponse;
 
-import com.example.plateformeback.enums.TypeStatut;
+import com.example.plateformeback.enums.TypeRoleUser;
 import com.example.plateformeback.publication.Publication;
 import com.example.plateformeback.publication.PublicationRepository;
 import com.example.plateformeback.user.Users;
@@ -58,7 +58,7 @@ public class ReponseService {
     @Transactional
     public ReponseDTO validerSolution(Long reponseId, Users admin) {
 
-        if (admin.getStatut() != TypeStatut.ADMIN && admin.getStatut() != TypeStatut.PROFESSEUR) {
+        if (admin.getStatut() != TypeRoleUser.ADMIN && admin.getStatut() != TypeRoleUser.PROFESSEUR) {
             throw new SecurityException("Seul un admin ou professeur peut valider une solution.");
         }
 
@@ -83,7 +83,7 @@ public class ReponseService {
      */
     @Transactional
     public ReponseDTO devaliderSolution(Long reponseId, Users admin) {
-        if (admin.getStatut() != TypeStatut.ADMIN && admin.getStatut() != TypeStatut.PROFESSEUR) {
+        if (admin.getStatut() != TypeRoleUser.ADMIN && admin.getStatut() != TypeRoleUser.PROFESSEUR) {
             throw new SecurityException("Seul un admin ou professeur peut dévalider une solution.");
         }
 

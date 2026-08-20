@@ -1,6 +1,6 @@
 package com.example.plateformeback.enums;
 
-public enum TypeStatut {
+public enum TypeRoleUser {
     PROFESSEUR,
     ELEVE,
     ADMIN

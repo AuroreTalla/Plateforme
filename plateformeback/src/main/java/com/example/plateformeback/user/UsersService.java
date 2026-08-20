@@ -1,7 +1,7 @@
 package com.example.plateformeback.user;
 
+import com.example.plateformeback.user.demandeProfesseur.*;
 import com.example.plateformeback.dto.ActivationDTO;
-import com.example.plateformeback.user.Professeur.ProfService;
 import com.example.plateformeback.verificationEmail.EmailVerification;
 import com.example.plateformeback.verificationEmail.EmailVerificationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @AllArgsConstructor
 @Service
@@ -23,13 +24,14 @@ public class UsersService implements UserDetailsService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
-    private final ProfService profService;  // ✅ Injection de ProfService
+    private final DemandeProfesseurService demandeProfesseurService;  // ✅ Injection de DemandeProfesseurService
 
     @Transactional
-    public void inscription(Users users) {
+    public Users inscription(Users users) {
         users.setPassword(this.passwordEncoder.encode(users.getPassword()));
         users = this.usersRepository.save(users);
         this.emailVerificationService.validation(users);
+    return users;
     }
 
     @Transactional
@@ -62,19 +64,12 @@ public class UsersService implements UserDetailsService {
     Users savedUser = this.usersRepository.save(userActive);
 
     // Notifier les admins uniquement une fois le compte réellement activé
-    if (savedUser.isDemandeProfesseur()) {
-        profService.notifierAdminDemandeProfesseur(savedUser);
+    if (demandeProfesseurService.aUneDemandeEnAttente(savedUser.getId())) {
+        demandeProfesseurService.notifierAdminDemandeProfesseur(savedUser);
     }
 
     return savedUser;
 }
-
-    /**
-     * Délègue la notification à ProfService
-     */
-    public void notifierAdminDemandeProfesseur(Users user) {
-        profService.notifierAdminDemandeProfesseur(user);
-    }
 
     // Méthodes existantes pour Spring Security et gestion utilisateurs
     @Override
@@ -112,4 +107,11 @@ public class UsersService implements UserDetailsService {
         return usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + email));
     }
+
+    public List<UserDTO> getAllUsers() {
+    return usersRepository.findAll()
+            .stream()
+            .map(UserDTO::fromEntity)
+            .toList();
+}
 }

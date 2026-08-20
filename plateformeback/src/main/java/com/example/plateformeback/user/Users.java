@@ -1,6 +1,6 @@
 package com.example.plateformeback.user;
 
-import com.example.plateformeback.enums.TypeStatut;
+import com.example.plateformeback.enums.TypeRoleUser;
 import com.example.plateformeback.groupe.Groupe;
 import com.example.plateformeback.message.Message;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -41,10 +41,7 @@ public class Users implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statut")
-    private TypeStatut statut;
-
-    @Column(name = "demande_professeur")
-    private boolean demandeProfesseur;
+    private TypeRoleUser statut;
 
     @Column(name = "date_inscription")
     private LocalDateTime dateInscription;
