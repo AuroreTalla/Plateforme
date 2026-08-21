@@ -48,22 +48,6 @@ public class ConfigurationApp {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-<<<<<<< HEAD
-                        // Endpoints publics
-                        .requestMatchers("/users/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/app/**").permitAll()
-                        
-                        // ✅ AJOUT: Healthcheck pour Docker
-                        .requestMatchers("/actuator/**").permitAll()
-                        
-                        // Endpoints protégés
-                        .requestMatchers("/groupes/**").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        
-                        // Tout le reste nécessite une authentification
-                        .anyRequest().authenticated()
-=======
                 .requestMatchers(
                         "/swagger-ui/**",
                         "/swagger-ui.html",
@@ -80,7 +64,6 @@ public class ConfigurationApp {
                 .requestMatchers("/app/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .anyRequest().authenticated()
->>>>>>> origin/main
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -123,13 +106,8 @@ public class ConfigurationApp {
             "PATCH",    // ✅ AJOUT: Pour les mises à jour partielles
             "OPTIONS"   // ✅ AJOUT: Pour les requêtes preflight CORS
         ));
-<<<<<<< HEAD
-        
-        // ✅ Headers autorisés
-=======
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
->>>>>>> origin/main
         configuration.setAllowedHeaders(List.of("*"));
         
         // ✅ Headers exposés au frontend
