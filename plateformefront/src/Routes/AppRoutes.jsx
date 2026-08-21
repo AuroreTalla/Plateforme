@@ -11,6 +11,8 @@ import Apropos from "../Composants/NavBar/Apropos";
 import Inscription from "../Pages/Inscription/Inscription";
 import ActivationCode from "../Pages/Inscription/ActivationCode";
 import Connexion from "../Pages/Connexion/Connexion";
+import MotDePasseOublie from "../Pages/Connexion/MotDePasseOublie";
+
 
 // Dashboard pages
 import Dashboard from "../Pages/Dashboard/Dashboard";
@@ -21,6 +23,7 @@ import MatierePage from "../Pages/Matiere/Matiere";
 
 // Pages Communes
 import Parametre from "../Pages/Parametre/Parametre";
+import ReinitialiserMotDePasse from "../Pages/Parametre/ReinitialiserMotDePasse";
 import Feedback from "../Pages/Feedback/Feedback";
 
 // Pages Professeur
@@ -42,6 +45,8 @@ const router = createBrowserRouter([
   { path: "/inscription", element: <Inscription /> },
   { path: "/activationcode", element: <ActivationCode /> },
   { path: "/connexion", element: <Connexion /> },
+  { path: "/mot-de-passe-oublie", element: <MotDePasseOublie /> },
+  { path: "/reinitialiser-mot-de-passe", element: <ReinitialiserMotDePasse /> },
   {
     element: <Layout />,
     children: [

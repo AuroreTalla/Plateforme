@@ -67,7 +67,7 @@ export default function MatiereCreate() {
 
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={3}>
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>Nom de la matière</Typography>
                                 <TextField
                                     fullWidth
@@ -82,7 +82,7 @@ export default function MatiereCreate() {
                                 />
                             </Grid>
 
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>Description détaillée</Typography>
                                 <TextField
                                     fullWidth
@@ -98,7 +98,7 @@ export default function MatiereCreate() {
                                 />
                             </Grid>
 
-                            <Grid item xs={12} sx={{ mt: 2 }}>
+                            <Grid size={{ xs: 12 }} sx={{ mt: 2 }}>
                                 <Button
                                     fullWidth
                                     type="submit"

@@ -142,64 +142,126 @@ const handleConfirmerSuppression = async () => {
             <Grid container spacing={3}>
                 {filteredGroupes.map((groupe, index) => (
                     <Fade in={true} timeout={300 + index * 50} key={groupe.id}>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <Card elevation={0} sx={{
-                                height: '100%',
-                                borderRadius: 4,
-                                border: '1px solid #e2e8f0',
-                                transition: 'all 0.2s',
-                                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 10px 30px -10px rgba(124, 58, 237, 0.2)', borderColor: '#7c3aed' }
-                            }}>
-                                <CardActionArea
-                                    onClick={() => setSelectedGroupe(groupe)}
-                                    sx={{ height: '100%', p: 1 }}
-                                >
-                                    <CardContent>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                            <Avatar sx={{ width: 56, height: 56, bgcolor: '#f5f3ff', color: '#7c3aed', mr: 2, borderRadius: 3 }}>
-                                                <GroupIcon />
-                                            </Avatar>
-                                            <Box sx={{ flexGrow: 1 }}>
-                                                <Typography variant="h6" fontWeight="bold" color="#1e293b">{groupe.nom}</Typography>
-                                            </Box>
-                                        </Box>
-                                        <Typography variant="body2" sx={{
-                                            mb: 3,
-                                            color: '#64748b',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden',
-                                            height: 40
-                                        }}>
-                                            {groupe.description || "Aucune description disponible."}
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', pt: 2, borderTop: '1px solid #f1f5f9', justifyContent: 'space-between' }}>
-  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-    <ChatIcon sx={{ fontSize: 18, mr: 1, color: '#7c3aed' }} />
-    <Typography variant="body2" color="#7c3aed" fontWeight="bold">
-      Accéder au chat
-    </Typography>
-  </Box>
-  <IconButton
-    size="small"
-    onClick={(e) => {
-      e.stopPropagation();
-      setGroupeASupprimer(groupe);
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Card
+    elevation={0}
+    sx={{
+        height: '100%',
+        borderRadius: 4,
+        border: '1px solid #e2e8f0',
+        transition: 'all 0.2s',
+        '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 10px 30px -10px rgba(124, 58, 237, 0.2)',
+            borderColor: '#7c3aed'
+        }
     }}
-    sx={{ color: '#ef4444' }}
-  >
-    <DeleteIcon fontSize="small" />
-  </IconButton>
-</Box>
-                                    </CardContent>
-                                </CardActionArea>
-                            </Card>
+>
+    <CardContent>
+
+        {/* Zone cliquable */}
+        <Box
+            onClick={() => setSelectedGroupe(groupe)}
+            sx={{
+                cursor: 'pointer'
+            }}
+        >
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mb: 3
+            }}>
+                <Avatar
+                    sx={{
+                        width: 56,
+                        height: 56,
+                        bgcolor: '#f5f3ff',
+                        color: '#7c3aed',
+                        mr: 2,
+                        borderRadius: 3
+                    }}
+                >
+                    <GroupIcon />
+                </Avatar>
+
+                <Box sx={{ flexGrow: 1 }}>
+                    <Typography
+                        variant="h6"
+                        fontWeight="bold"
+                        color="#1e293b"
+                    >
+                        {groupe.nom}
+                    </Typography>
+                </Box>
+            </Box>
+
+            <Typography
+                variant="body2"
+                sx={{
+                    mb: 3,
+                    color: '#64748b',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    height: 40
+                }}
+            >
+                {groupe.description || "Aucune description disponible."}
+            </Typography>
+        </Box>
+
+        {/* Actions */}
+        <Box
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                pt: 2,
+                borderTop: '1px solid #f1f5f9',
+                justifyContent: 'space-between'
+            }}
+        >
+            <Box
+                onClick={() => setSelectedGroupe(groupe)}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer'
+                }}
+            >
+                <ChatIcon
+                    sx={{
+                        fontSize: 18,
+                        mr: 1,
+                        color: '#7c3aed'
+                    }}
+                />
+
+                <Typography
+                    variant="body2"
+                    color="#7c3aed"
+                    fontWeight="bold"
+                >
+                    Accéder au chat
+                </Typography>
+            </Box>
+
+            <IconButton
+                size="small"
+                onClick={() => setGroupeASupprimer(groupe)}
+                sx={{ color: '#ef4444' }}
+            >
+                <DeleteIcon fontSize="small" />
+            </IconButton>
+        </Box>
+
+    </CardContent>
+</Card>
                         </Grid>
                     </Fade>
                 ))}
                 {filteredGroupes.length === 0 && (
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                         <Box sx={{ textAlign: 'center', py: 8 }}>
                             <GroupIcon sx={{ fontSize: 60, color: '#e2e8f0', mb: 2 }} />
                             <Typography color="text.secondary">Aucun groupe trouvé.</Typography>

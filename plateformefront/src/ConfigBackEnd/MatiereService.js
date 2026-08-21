@@ -1,4 +1,11 @@
+import { API_BASE_URL } from "./Api";
 import { api } from "./Api";
+
+
+export const buildMediaUrl = (mediaUrl) => {
+  if (!mediaUrl) return null;
+  return mediaUrl.startsWith("http") ? mediaUrl : `${API_BASE_URL}${mediaUrl}`;
+};
 
 export const getAllMatieres = () => api.get("/matieres");
 export const getMatiereById = (id) => api.get(`/matieres/${id}`);
@@ -14,3 +21,6 @@ export const getExercicesByMatiere = (matiereId) => api.get(`/matieres/${matiere
 export const ajouterExercice = (matiereId, titre, type, contenu, mediaUrl, ordre = 0) =>
   api.post(`/matieres/${matiereId}/exercices`, { titre, type, contenu, mediaUrl, ordre });
 export const supprimerExercice = (exerciceId) => api.delete(`/matieres/exercices/${exerciceId}`);
+
+export const compterPublicationsNonResolues = (groupeId) =>
+  api.get(`/publications/groupe/${groupeId}/non-resolues/count`);
