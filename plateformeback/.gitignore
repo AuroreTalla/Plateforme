@@ -1,3 +1,18 @@
 plateformefront/
 vite/
 node_modules/
+
+# Maven
+target/
+**/target/
+
+# IDE
+.idea/
+*.iml
+
+# Node
+node_modules/
+dist/
+
+# Environnement
+.env
