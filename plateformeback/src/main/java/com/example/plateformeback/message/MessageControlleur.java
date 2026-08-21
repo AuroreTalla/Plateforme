@@ -24,53 +24,40 @@ public class MessageControlleur {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
-    @MessageMapping("/sendMessage/{groupeNom}")
-    public void sendMessage(
-            @DestinationVariable String groupeNom,
-            @Payload Map<String, String> payload
-    ) {
-        try {
-            log.info("📩 Message reçu pour le groupe: {}", groupeNom);
-            log.info("📦 Payload complet: {}", payload);
+    @MessageMapping("/sendMessage/{groupeId}")
+public void sendMessage(
+        @DestinationVariable Long groupeId,
+        @Payload Map<String, String> payload
+) {
+    try {
 
-            // ✅ CORRECTION : chercher "userEmail" au lieu de "email"
-            String userEmail = payload.get("userEmail");
+        String userEmail = payload.get("userEmail");
 
-            if (userEmail == null || userEmail.isEmpty()) {
-                log.error("❌ Email utilisateur manquant. Payload: {}", payload);
-                return;
-            }
-
-            log.info("👤 Utilisateur: {}", userEmail);
-
-            // Récupérer l'utilisateur par email
-            Users currentUser = usersService.getUserByEmail(userEmail);
-
-            // Récupérer le groupe
-            Groupe groupe = groupeService.findByNom(groupeNom);
-
-            // Vérifier que l'utilisateur est membre
-            groupeService.checkUserMember(groupe, currentUser);
-
-            // Créer et sauvegarder le message
-            Message message = new Message();
-            message.setContent(payload.get("content"));
-            message.setSender(currentUser);
-            message.setGroupe(groupe);
-
-            MessageDTO savedMessage = messageService.sendMessage(message);
-            log.info("✅ Message sauvegardé: ID={}", savedMessage.id());
-
-            // Diffuser à tous les abonnés du groupe
-            messagingTemplate.convertAndSend(
-                    "/topic/groupe/" + groupeNom,
-                    savedMessage
-            );
-
-            log.info("📡 Message diffusé via WebSocket");
-
-        } catch (Exception e) {
-            log.error("❌ Erreur envoi message: {}", e.getMessage(), e);
+        if (userEmail == null || userEmail.isEmpty()) {
+            log.error("❌ Email utilisateur manquant");
+            return;
         }
+
+        Users currentUser = usersService.getUserByEmail(userEmail);
+
+        Groupe groupe = groupeService.findById(groupeId);
+
+        Message message = new Message();
+        message.setContent(payload.get("content"));
+        message.setSender(currentUser);
+        message.setGroupe(groupe);
+
+        MessageDTO savedMessage = messageService.sendMessage(message);
+
+        log.info("✅ Message sauvegardé: ID={}", savedMessage.id());
+
+        messagingTemplate.convertAndSend(
+                "/topic/groupe/" + groupeId,
+                savedMessage
+        );
+
+    } catch (Exception e) {
+        log.error("❌ Erreur envoi message", e);
     }
+}
 }

@@ -1,6 +1,6 @@
 package com.example.plateformeback.user;
 
-import com.example.plateformeback.enums.TypeStatut;
+import com.example.plateformeback.enums.TypeRoleUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,7 +14,6 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     Optional<Users> findByName(String name);
     boolean existsByName(String name);
 
-    // ✅ Utiliser TypeStatut (enum) au lieu de String
-    List<Users> findByStatut(TypeStatut statut);
-    List<Users> findByDemandeProfesseurTrueAndStatut(TypeStatut statut);
+    // ✅ Utiliser TypeRoleUser (enum) au lieu de String
+    List<Users> findByStatut(TypeRoleUser statut);
 }

@@ -1,10 +1,13 @@
 package com.example.plateformeback.user;
 
+import com.example.plateformeback.user.demandeProfesseur.*;
 import com.example.plateformeback.dto.ActivationDTO;
 import com.example.plateformeback.dto.AuthentificationDTO;
-import com.example.plateformeback.enums.TypeStatut;
+import com.example.plateformeback.enums.TypeRoleUser;
 import com.example.plateformeback.jwt.JwtCookieService;
 import com.example.plateformeback.jwt.JwtService;
+import com.example.plateformeback.password.PasswordResetService;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -35,41 +39,33 @@ public class UsersControlleur {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final JwtCookieService jwtCookieService;
+    private final PasswordResetService passwordResetService;
+    private final DemandeProfesseurService demandeProfesseurService;
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
     public ResponseEntity<?> inscription(@Valid @RequestBody Users users) {
-        log.info("Inscription pour email: {}", users.getEmail());
+    log.info("Inscription pour email: {}", users.getEmail());
 
-        // ✅ CORRIGÉ : Comparer avec l'enum TypeStatut
-        if (TypeStatut.PROFESSEUR.equals(users.getStatut())) {
-            // On met le statut à ELEVE par défaut
-            users.setStatut(TypeStatut.ELEVE);
-            // On marque qu'il a fait une demande de professeur
-            users.setDemandeProfesseur(true);
+    boolean demandeProf = TypeRoleUser.PROFESSEUR.equals(users.getStatut());
+    users.setStatut(TypeRoleUser.ELEVE);
 
-            usersService.inscription(users);
+    Users savedUser = usersService.inscription(users); // voir note ci-dessous : inscription() doit renvoyer Users
 
-            // ✅ Envoyer une notification à l'admin
-            usersService.notifierAdminDemandeProfesseur(users);
+    if (demandeProf) {
+        demandeProfesseurService.creerDemande(savedUser);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "Compte créé avec succès. Votre demande de statut professeur sera examinée par un administrateur.",
-                    "statut", TypeStatut.ELEVE.name(),  // ✅ .name() pour retourner le String
-                    "demandeProfesseur", true
-            ));
-        }
-        // ✅ Si l'utilisateur s'inscrit comme ELEVE
-        else {
-            users.setStatut(TypeStatut.ELEVE);
-            users.setDemandeProfesseur(false);
-            usersService.inscription(users);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "Utilisateur créé avec succès. Vérifiez vos emails.",
-                    "statut", TypeStatut.ELEVE.name()  // ✅ .name() pour retourner le String
-            ));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "Compte créé avec succès. Votre demande de statut professeur sera examinée par un administrateur.",
+                "statut", TypeRoleUser.ELEVE.name(),
+                "demandeProfesseur", true
+        ));
     }
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+            "message", "Utilisateur créé avec succès. Vérifiez vos emails.",
+            "statut", TypeRoleUser.ELEVE.name()
+    ));
+}
 
     // -------------------------------
     // 🔹 Activation
@@ -174,6 +170,12 @@ public class UsersControlleur {
         return ResponseEntity.ok(UserDTO.fromEntity(user));
     }
 
+    @GetMapping
+@PreAuthorize("hasRole('ADMIN')")
+public List<UserDTO> getAllUsers() {
+    return usersService.getAllUsers();
+}
+
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
         try {
@@ -190,4 +192,38 @@ public class UsersControlleur {
                     .body(Map.of("message", "Erreur interne lors de la récupération de l'utilisateur courant"));
         }
     }
+
+    @PatchMapping("/password")
+public ResponseEntity<?> changerMotDePasse(@RequestBody Map<String, String> payload, Authentication auth) {
+    try {
+        Users currentUser = (Users) auth.getPrincipal();
+        usersService.changerMotDePasse(currentUser, payload.get("ancienMotDePasse"), payload.get("nouveauMotDePasse"));
+        return ResponseEntity.ok(Map.of("message", "Mot de passe modifié avec succès"));
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+    }
+}
+
+@PatchMapping("/profil")
+public ResponseEntity<?> modifierProfil(@RequestBody Map<String, String> payload, Authentication auth) {
+    Users currentUser = (Users) auth.getPrincipal();
+    Users updated = usersService.modifierProfil(currentUser, payload.get("name"));
+    return ResponseEntity.ok(UserDTO.fromEntity(updated));
+}
+
+@PostMapping("/mot-de-passe-oublie")
+public ResponseEntity<?> motDePasseOublie(@RequestBody Map<String, String> payload) {
+    passwordResetService.demanderReinitialisation(payload.get("email"));
+    return ResponseEntity.ok(Map.of("message", "Si cet email existe, un code de réinitialisation a été envoyé."));
+}
+
+@PostMapping("/reinitialiser-mot-de-passe")
+public ResponseEntity<?> reinitialiserMotDePasse(@RequestBody Map<String, String> payload) {
+    try {
+        passwordResetService.reinitialiser(payload.get("code"), payload.get("nouveauMotDePasse"));
+        return ResponseEntity.ok(Map.of("message", "Mot de passe réinitialisé avec succès"));
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+    }
+}
 }

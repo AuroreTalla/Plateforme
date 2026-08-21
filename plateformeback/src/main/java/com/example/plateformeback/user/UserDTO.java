@@ -1,15 +1,14 @@
 package com.example.plateformeback.user;
 
-import com.example.plateformeback.enums.TypeStatut;
+import com.example.plateformeback.enums.TypeRoleUser;
 import lombok.Builder;
 import java.time.LocalDateTime;
-
 @Builder
 public record UserDTO(
         Long id,
         String name,
         String email,
-        TypeStatut statut,
+        TypeRoleUser statut,
         boolean demandeProfesseur,
         LocalDateTime dateInscription,
         boolean emailVerifie,
@@ -21,7 +20,6 @@ public record UserDTO(
                 .name(user.getName())
                 .email(user.getEmail())
                 .statut(user.getStatut())
-                .demandeProfesseur(user.isDemandeProfesseur())
                 .dateInscription(user.getDateInscription())
                 .emailVerifie(user.isEmailVerifie())
                 .lastSeen(user.getLastSeen())

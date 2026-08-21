@@ -4,7 +4,6 @@ import com.example.plateformeback.user.Users;
 import lombok.Builder;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Builder
 public record GroupeDTO(

@@ -1,7 +1,13 @@
 import axios from "axios";
 
+export const API_BASE_URL = "http://localhost:8081";
+
 export const api = axios.create({
+<<<<<<< HEAD
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8081/",
+=======
+  baseURL: API_BASE_URL,
+>>>>>>> origin/main
   withCredentials: true, // ✅ Envoie les cookies automatiquement
   timeout: 10000,
 });

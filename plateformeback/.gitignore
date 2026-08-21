@@ -1,6 +1,7 @@
 plateformefront/
 vite/
 node_modules/
+<<<<<<< HEAD
 
 # Maven
 target/
@@ -16,3 +17,45 @@ dist/
 
 # Environnement
 .env
+=======
+# =========================
+# IntelliJ IDEA
+# =========================
+.idea/
+*.iml
+
+# =========================
+# Spring Boot / Maven
+# =========================
+**/target/
+**/.mvn/timing.properties
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Node / React / Vite
+# =========================
+**/node_modules/
+**/dist/
+
+# =========================
+# Environment
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+>>>>>>> origin/main

@@ -31,34 +31,21 @@ export const SideBarItems = {
       icon: MenuBookIcon,
       text: "Cours",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathC", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/math/cours" },
-        { id: "physC", icon: ScienceIcon, text: "Physique", path: "/dashboard/phys/cours" },
-        { id: "chimC", icon: BiotechIcon, text: "Chimie", path: "/dashboard/chim/cours" },
-      ],
+      subItems: [],
     },
     {
       id: "exo",
       icon: DescriptionIcon,
       text: "Exercices",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathE", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/math/exo" },
-        { id: "physE", icon: ScienceIcon, text: "Physique", path: "/dashboard/phys/exo" },
-        { id: "chimE", icon: BiotechIcon, text: "Chimie", path: "/dashboard/chim/exo" },
-      ],
+      subItems: [],
     },
     {
       id: "forums",
       icon: ChatIcon,
       text: "Forums",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathF", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/forum/Mathématiques" },
-        { id: "physF", icon: ScienceIcon, text: "Physique", path: "/dashboard/forum/Physique" },
-        { id: "chimF", icon: BiotechIcon, text: "Chimie", path: "/dashboard/forum/Chimie" },
-        //{ id: "forumsGen", icon: ForumIcon, text: "Forums Généraux", path: "/dashboard/forum/generaux" },
-      ],
+      subItems: [],
     },
     {
       id: "parametre",
@@ -86,34 +73,21 @@ export const SideBarItems = {
       icon: MenuBookIcon,
       text: "Cours",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathC", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/math/cours" },
-        { id: "physC", icon: ScienceIcon, text: "Physique", path: "/dashboard/phys/cours" },
-        { id: "chimC", icon: BiotechIcon, text: "Chimie", path: "/dashboard/chim/cours" },
-      ],
+      subItems: [],
     },
     {
       id: "exo",
       icon: DescriptionIcon,
       text: "Exercices",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathE", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/math/exo" },
-        { id: "physE", icon: ScienceIcon, text: "Physique", path: "/dashboard/phys/exo" },
-        { id: "chimE", icon: BiotechIcon, text: "Chimie", path: "/dashboard/chim/exo" },
-      ],
+      subItems: [],
     },
     {
       id: "forums",
       icon: ChatIcon,
       text: "Forums",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathF", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/forum/Mathématiques" },
-        { id: "physF", icon: ScienceIcon, text: "Physique", path: "/dashboard/forum/Physique" },
-        { id: "chimF", icon: BiotechIcon, text: "Chimie", path: "/dashboard/forum/Chimie" },
-        //{ id: "forumsGen", icon: ForumIcon, text: "Forums Généraux", path: "/dashboard/forum/generaux" },
-      ],
+      subItems: [],
     },
     {
       id: "demandes",
@@ -147,22 +121,14 @@ export const SideBarItems = {
       icon: MenuBookIcon,
       text: "Cours",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathC", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/math/cours" },
-        { id: "physC", icon: ScienceIcon, text: "Physique", path: "/dashboard/phys/cours" },
-        { id: "chimC", icon: BiotechIcon, text: "Chimie", path: "/dashboard/chim/cours" },
-      ],
+      subItems: [],
     },
     {
       id: "exo",
       icon: DescriptionIcon,
       text: "Exercices",
       hasSubMenu: true,
-      subItems: [
-        { id: "mathE", icon: CalculateIcon, text: "Mathématiques", path: "/dashboard/math/exo" },
-        { id: "physE", icon: ScienceIcon, text: "Physique", path: "/dashboard/phys/exo" },
-        { id: "chimE", icon: BiotechIcon, text: "Chimie", path: "/dashboard/chim/exo" },
-      ],
+      subItems: [],
     },
     {
       id: "users",
@@ -210,3 +176,36 @@ export const SideBarItems = {
     },
   ],
 };
+
+const matiereIcons = {
+  "Mathématiques": CalculateIcon,
+  "Physique": ScienceIcon,
+  "Chimie": BiotechIcon,
+};
+
+export function buildCoursSubItems(matieres) {
+  return matieres.map((m) => ({
+    id: `cours-${m.id}`,
+    icon: matiereIcons[m.nom] || CalculateIcon,
+    text: m.nom,
+    path: `/dashboard/matiere/${m.id}/cours`,
+  }));
+}
+
+export function buildExercicesSubItems(matieres) {
+  return matieres.map((m) => ({
+    id: `exo-${m.id}`,
+    icon: matiereIcons[m.nom] || CalculateIcon,
+    text: m.nom,
+    path: `/dashboard/matiere/${m.id}/exercices`,
+  }));
+}
+
+export function buildForumSubItems(matieres) {
+  return matieres.map((m) => ({
+    id: `forum-${m.id}`,
+    icon: matiereIcons[m.nom] || ChatIcon,
+    text: m.nom,
+    path: `/dashboard/forum/${m.groupeId}`,
+  }));
+}

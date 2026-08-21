@@ -12,23 +12,19 @@ import Contact from "../Pages/Contact/Contact";
 import Inscription from "../Pages/Inscription/Inscription";
 import ActivationCode from "../Pages/Inscription/ActivationCode";
 import Connexion from "../Pages/Connexion/Connexion";
+import MotDePasseOublie from "../Pages/Connexion/MotDePasseOublie";
+
 
 // Dashboard pages
 import Dashboard from "../Pages/Dashboard/Dashboard";
 import Forum from "../Pages/Forum/Forum";
 import InfoProf from "../Pages/Admin/InfoProf";
-import Math from "../Pages/Matiere/Math/Math";
-import Phys from "../Pages/Matiere/Phys/Phys";
-import Chim from "../Pages/Matiere/Chim/Chim";
-import CoursM from "../Pages/Matiere/Math/CoursM";
-import ExoM from "../Pages/Matiere/Math/ExoM";
-import CoursP from "../Pages/Matiere/Phys/CoursP";
-import ExoP from "../Pages/Matiere/Phys/ExoP";
-import CoursC from "../Pages/Matiere/Chim/CoursC";
-import ExoC from "../Pages/Matiere/Chim/ExoC";
+
+import MatierePage from "../Pages/Matiere/Matiere";
 
 // Pages Communes
 import Parametre from "../Pages/Parametre/Parametre";
+import ReinitialiserMotDePasse from "../Pages/Parametre/ReinitialiserMotDePasse";
 import Feedback from "../Pages/Feedback/Feedback";
 
 // Pages Professeur
@@ -37,8 +33,10 @@ import MesDemandes from "../Pages/Demandes/MesDemandes";
 // Pages Admin
 import UsersList from "../Pages/Admin/UsersList";
 import ForumsAdmin from "../Pages/Admin/ForumsAdmin";
-import { MatiereList, MatiereCreate } from "../Pages/Admin/Matiere/MatierePages";
-import { DemandesProf, DemandesMatieres } from "../Pages/Admin/Demandes/DemandesAdmin";
+import MatiereList from "../Pages/Admin/Matiere/MatiereList";
+import MatiereCreate from "../Pages/Admin/Matiere/MatiereCreate";
+import DemandesProf from "../Pages/Admin/Demandes/DemandesProf";
+import DemandesMatieres from "../Pages/Admin/Demandes/DemandesMatieres";
 
 const router = createBrowserRouter([
 
@@ -48,6 +46,8 @@ const router = createBrowserRouter([
   { path: "/inscription", element: <Inscription /> },
   { path: "/activationcode", element: <ActivationCode /> },
   { path: "/connexion", element: <Connexion /> },
+  { path: "/mot-de-passe-oublie", element: <MotDePasseOublie /> },
+  { path: "/reinitialiser-mot-de-passe", element: <ReinitialiserMotDePasse /> },
   {
     element: <Layout />,
     children: [
@@ -66,26 +66,8 @@ const router = createBrowserRouter([
 
           { path: "forum/:sujet?", element: <Forum /> },
           { path: "infoprof", element: <InfoProf /> },
-
-          {
-            path: "math",
-            element: <Math />,
-            children: [
-              { index: true, element: <CoursM /> },
-              { path: "cours", element: <CoursM /> },
-              { path: "exo", element: <ExoM /> },
-            ],
-          },
-
-          {
-            path: "phys",
-            element: <Phys />,
-            children: [
-              { index: true, element: <CoursP /> },
-              { path: "cours", element: <CoursP /> },
-              { path: "exo", element: <ExoP /> },
-            ],
-          },
+          { path: "matiere/:matiereId/cours", element: <MatierePage defaultTab="cours" /> },
+          { path: "matiere/:matiereId/exercices", element: <MatierePage defaultTab="exercices" /> },
 
           // Routes Communes
           { path: "parametre", element: <Parametre /> },
@@ -111,20 +93,8 @@ const router = createBrowserRouter([
               { path: "matieres", element: <DemandesMatieres /> },
             ]
           },
-
-          {
-            path: "chim",
-            element: <Chim />,
-            children: [
-              { index: true, element: <CoursC /> },
-              { path: "cours", element: <CoursC /> },
-              { path: "exo", element: <ExoC /> },
-            ],
-          },
         ],
       },
-
-
     ]
   },
   { path: "*", element: <Navigate to="/" replace /> },

@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { SideBarItems } from "./SideBarItems";
-
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,16 +7,24 @@ import {
   ExpandLess,
 
 } from "@mui/icons-material";
+import { useMatieres } from "../Matiere/MatiereProvider.jsx";
+import { SideBarItems, buildCoursSubItems, buildExercicesSubItems, buildForumSubItems } from "./SideBarItems";
 
 
 export default function SideBar({ isOpen, setIsOpen, user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
+  const { matieres } = useMatieres();
+
 
   // Configuration des menus selon le rôle  
-  const items = SideBarItems[user?.statut] || [];
-
+  const items = (SideBarItems[user?.statut] || []).map((item) => {
+  if (item.id === "cours") return { ...item, subItems: buildCoursSubItems(matieres) };
+  if (item.id === "exo") return { ...item, subItems: buildExercicesSubItems(matieres) };
+  if (item.id === "forums") return { ...item, subItems: buildForumSubItems(matieres) };
+  return item;
+  });
   // ✅ Optimisation : Calcul initial pour éviter un double rendu
   const [expanded, setExpanded] = useState(() => {
     const initialState = {};
@@ -68,13 +74,13 @@ export default function SideBar({ isOpen, setIsOpen, user }) {
       )}
 
       <aside
-        className={`
-          fixed top-20 left-0 bg-white shadow-2xl border-r border-gray-200
-          transition-all duration-300 z-40 h-[calc(100vh-80px)] flex flex-col
-          ${isOpen ? "w-80" : "w-0 lg:w-20"}
-          overflow-hidden
-        `}
-      >
+  className={`
+    bg-white shadow-2xl border-r border-gray-200
+    transition-all duration-300 z-40 h-full flex flex-col
+    ${isOpen ? "w-80" : "w-0 lg:w-20"}
+    overflow-hidden
+  `}
+>
 
         <div className="border-b border-gray-200 p-4">
           {isOpen ? (

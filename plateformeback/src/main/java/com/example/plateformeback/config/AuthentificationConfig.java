@@ -1,6 +1,5 @@
 package com.example.plateformeback.config;
 
-import com.example.plateformeback.user.UsersService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

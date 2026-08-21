@@ -4,9 +4,6 @@ import com.example.plateformeback.user.Users;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.nio.charset.StandardCharsets;
 
 @Setter
 @Getter

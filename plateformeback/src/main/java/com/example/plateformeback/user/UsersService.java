@@ -1,5 +1,6 @@
 package com.example.plateformeback.user;
 
+import com.example.plateformeback.user.demandeProfesseur.*;
 import com.example.plateformeback.dto.ActivationDTO;
 import com.example.plateformeback.verificationEmail.EmailVerification;
 import com.example.plateformeback.verificationEmail.EmailVerificationService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @AllArgsConstructor
 @Service
@@ -22,51 +24,52 @@ public class UsersService implements UserDetailsService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
-    private final ProfService profService;  // ✅ Injection de ProfService
+    private final DemandeProfesseurService demandeProfesseurService;  // ✅ Injection de DemandeProfesseurService
 
     @Transactional
-    public void inscription(Users users) {
+    public Users inscription(Users users) {
         users.setPassword(this.passwordEncoder.encode(users.getPassword()));
         users = this.usersRepository.save(users);
         this.emailVerificationService.validation(users);
+    return users;
     }
 
     @Transactional
     public Users activation(ActivationDTO activationDTO) {
-        String code = activationDTO.getCode();
-        String email = activationDTO.getEmail();
+    String code = activationDTO.getCode();
+    String email = activationDTO.getEmail();
 
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Code manquant");
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email manquant");
-        }
-
-        EmailVerification emailVerification = this.emailVerificationService.lireEnFonctionDuCode(code);
-
-        if (!emailVerification.getUsers().getEmail().equals(email)) {
-            throw new IllegalArgumentException("Email et code ne correspondent pas");
-        }
-
-        if (Instant.now().isAfter(emailVerification.getDateExpiration())) {
-            throw new IllegalArgumentException("Votre code est expiré");
-        }
-
-        Users userActive = this.usersRepository.findById(emailVerification.getUsers().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Utilisateur inconnu"));
-
-        userActive.setEmailVerifie(true);
-        emailVerificationService.deleteVerification(emailVerification);
-        return this.usersRepository.save(userActive);
+    if (code == null || code.isBlank()) {
+        throw new IllegalArgumentException("Code manquant");
+    }
+    if (email == null || email.isBlank()) {
+        throw new IllegalArgumentException("Email manquant");
     }
 
-    /**
-     * Délègue la notification à ProfService
-     */
-    public void notifierAdminDemandeProfesseur(Users user) {
-        profService.notifierAdminDemandeProfesseur(user);
+    EmailVerification emailVerification = this.emailVerificationService.lireEnFonctionDuCode(code);
+
+    if (!emailVerification.getUsers().getEmail().equals(email)) {
+        throw new IllegalArgumentException("Email et code ne correspondent pas");
     }
+
+    if (Instant.now().isAfter(emailVerification.getDateExpiration())) {
+        throw new IllegalArgumentException("Votre code est expiré");
+    }
+
+    Users userActive = this.usersRepository.findById(emailVerification.getUsers().getId())
+            .orElseThrow(() -> new EntityNotFoundException("Utilisateur inconnu"));
+
+    userActive.setEmailVerifie(true);
+    emailVerificationService.deleteVerification(emailVerification);
+    Users savedUser = this.usersRepository.save(userActive);
+
+    // Notifier les admins uniquement une fois le compte réellement activé
+    if (demandeProfesseurService.aUneDemandeEnAttente(savedUser.getId())) {
+        demandeProfesseurService.notifierAdminDemandeProfesseur(savedUser);
+    }
+
+    return savedUser;
+}
 
     // Méthodes existantes pour Spring Security et gestion utilisateurs
     @Override
@@ -104,4 +107,32 @@ public class UsersService implements UserDetailsService {
         return usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + email));
     }
+
+    public List<UserDTO> getAllUsers() {
+    return usersRepository.findAll()
+            .stream()
+            .map(UserDTO::fromEntity)
+            .toList();
+}
+
+    @Transactional
+public Users changerMotDePasse(Users currentUser, String ancienMotDePasse, String nouveauMotDePasse) {
+    if (!passwordEncoder.matches(ancienMotDePasse, currentUser.getPassword())) {
+        throw new IllegalArgumentException("Ancien mot de passe incorrect");
+    }
+    if (nouveauMotDePasse == null || nouveauMotDePasse.length() < 8) {
+        throw new IllegalArgumentException("Le nouveau mot de passe doit contenir au moins 8 caractères");
+    }
+
+    currentUser.setPassword(passwordEncoder.encode(nouveauMotDePasse));
+    return usersRepository.save(currentUser);
+}
+
+@Transactional
+public Users modifierProfil(Users currentUser, String nom) {
+    if (nom != null && !nom.isBlank()) {
+        currentUser.setName(nom);
+    }
+    return usersRepository.save(currentUser);
+}
 }

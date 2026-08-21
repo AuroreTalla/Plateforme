@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,21 @@ public class GroupeControlleur {
         return groupeService.creerGroupe(groupe);
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> supprimerGroupe(@PathVariable Long id) {
+    try {
+        groupeService.supprimerGroupe(id);
+        return ResponseEntity.ok(Map.of("message", "Groupe supprimé avec succès"));
+    } catch (IllegalStateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));
+    }
+}
+
     // Rejoindre un groupe
-    @PostMapping("/join")
+    /*@PostMapping("/join")
     public ResponseEntity<?> joinGroup(@RequestBody Map<String, String> payload) {
         try {
             Users currentUser = usersService.getCurrentUser();
@@ -52,30 +67,24 @@ public class GroupeControlleur {
             log.error("❌ Erreur join: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-    }
+    }*/
 
     // Récupérer les messages d'un groupe avec pagination
-    @GetMapping("/{nom}/messages")
+    @GetMapping("/{id}/messages")
     public ResponseEntity<?> getMessages(
-            @PathVariable String nom,
+            @PathVariable Long id,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
 
         try {
             Users currentUser = usersService.getCurrentUser();
 
-            log.info("📥 Demande messages pour {} par {}", nom, currentUser.getEmail());
-
-            // ✅ Vérifier si membre
-            if (!groupeService.isMember(nom, currentUser)) {
-                log.warn("⚠️ Utilisateur {} non membre de {}", currentUser.getEmail(), nom);
-                return ResponseEntity.status(403).body(Map.of("error", "Vous devez être membre du groupe"));
-            }
+            log.info("📥 Demande messages pour {} par {}", id, currentUser.getEmail());
 
             Pageable pageable = PageRequest.of(page, size, Sort.by("dateEnvoie").ascending());
-            List<MessageDTO> messages = groupeService.getMessagesDTO(nom, pageable);
+            List<MessageDTO> messages = groupeService.getMessagesDTO(id, pageable);
 
-            log.info("✅ {} messages envoyés pour {}", messages.size(), nom);
+            log.info("✅ {} messages envoyés pour {}", messages.size(), id);
 
             return ResponseEntity.ok(messages);
 
@@ -93,8 +102,8 @@ public class GroupeControlleur {
     }
 
     // Récupérer le dernier message
-    @GetMapping("/{nom}/messages/last")
-    public MessageDTO getLastMessage(@PathVariable String nom) {
-        return groupeService.getLastMessageDTO(nom);
+    @GetMapping("/{id}/messages/last")
+    public MessageDTO getLastMessage(@PathVariable Long id) {
+        return groupeService.getLastMessageDTO(id);
     }
 }

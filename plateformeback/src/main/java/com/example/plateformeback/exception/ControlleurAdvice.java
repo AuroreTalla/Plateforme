@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.AccessDeniedException;
 
 @ControllerAdvice
 public class ControlleurAdvice {
@@ -43,5 +44,23 @@ public class ControlleurAdvice {
     public @ResponseBody ErrorEntity handleCodeInvalide(CodeInvalideException ex) {
         return new ErrorEntity("CODE_INVALID", ex.getMessage());
     }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+@ExceptionHandler(SecurityException.class)
+public @ResponseBody ErrorEntity handleSecurity(SecurityException ex) {
+    return new ErrorEntity("FORBIDDEN", ex.getMessage());
+}
+
+@ResponseStatus(HttpStatus.FORBIDDEN)
+@ExceptionHandler(AccessDeniedException.class)
+public @ResponseBody ErrorEntity handleAccessDenied(AccessDeniedException ex) {
+    return new ErrorEntity("FORBIDDEN", "Accès refusé.");
+}
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+@ExceptionHandler(RuntimeException.class)
+public @ResponseBody ErrorEntity handleRuntime(RuntimeException ex) {
+    return new ErrorEntity("NOT_FOUND", ex.getMessage());
+}
 
 }
