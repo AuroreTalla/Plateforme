@@ -48,4 +48,8 @@ public class PublicationService {
         return publicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Publication introuvable : " + id));
     }
+
+    public long compterNonResoluesParGroupe(Long groupeId) {
+    return publicationRepository.countByGroupeIdAndStatut(groupeId, "NON_RESOLUE");
+}
 }

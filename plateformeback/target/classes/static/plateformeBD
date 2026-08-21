@@ -137,7 +137,7 @@ CREATE TABLE cours (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     matiere_id BIGINT NOT NULL,
     titre VARCHAR(255) NOT NULL,
-    type ENUM('TEXTE', 'IMAGE', 'VIDEO') NOT NULL DEFAULT 'TEXTE',
+    type ENUM('TEXTE', 'IMAGE', 'VIDEO', 'AUDIO', 'PDF', 'DOCUMENT') NOT NULL DEFAULT 'TEXTE',
     contenu TEXT,
     media_url VARCHAR(500),
     ordre INT NOT NULL DEFAULT 0,
@@ -149,7 +149,7 @@ CREATE TABLE exercice (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     matiere_id BIGINT NOT NULL,
     titre VARCHAR(255) NOT NULL,
-    type ENUM('TEXTE', 'IMAGE', 'VIDEO') NOT NULL DEFAULT 'TEXTE',
+    type ENUM('TEXTE', 'IMAGE', 'VIDEO', 'AUDIO', 'PDF', 'DOCUMENT') NOT NULL DEFAULT 'TEXTE',
     contenu TEXT,
     media_url VARCHAR(500),
     ordre INT NOT NULL DEFAULT 0,
@@ -159,3 +159,26 @@ CREATE TABLE exercice (
 
 CREATE INDEX idx_cours_matiere ON cours(matiere_id);
 CREATE INDEX idx_exercice_matiere ON exercice(matiere_id);
+
+CREATE TABLE password_reset (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    code VARCHAR(10) NOT NULL,
+    date_creation DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    date_expiration DATETIME(6) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_password_reset_code ON password_reset(code);
+
+CREATE TABLE feedback (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    comment TEXT NOT NULL,
+    rating INT NULL,
+    date_creation DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_feedback_user ON feedback(user_id);

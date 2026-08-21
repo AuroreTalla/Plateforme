@@ -6,6 +6,8 @@ import com.example.plateformeback.user.Users;
 import com.example.plateformeback.user.UsersService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -76,4 +78,10 @@ public class PublicationControlleur {
             log.error("❌ Erreur envoi publication", e);
         }
     }
+
+    @GetMapping("/groupe/{groupeId}/non-resolues/count")
+public ResponseEntity<?> compterNonResolues(@PathVariable Long groupeId) {
+    long count = publicationService.compterNonResoluesParGroupe(groupeId);
+    return ResponseEntity.ok(Map.of("count", count));
+}
 }

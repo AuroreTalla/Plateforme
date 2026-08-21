@@ -10,6 +10,8 @@ import java.util.List;
 public interface PublicationRepository extends JpaRepository<Publication, Long> {
     List<Publication> findByGroupeId(Long groupeId);
 
+    long countByGroupeIdAndStatut(Long groupeId, String statut);
+    
     @Query("SELECT p FROM Publication p WHERE p.groupe.id = :groupeId " +
            "AND (:keyword IS NULL OR " +
            "LOWER(p.titre) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

@@ -6,6 +6,8 @@ import com.example.plateformeback.dto.AuthentificationDTO;
 import com.example.plateformeback.enums.TypeRoleUser;
 import com.example.plateformeback.jwt.JwtCookieService;
 import com.example.plateformeback.jwt.JwtService;
+import com.example.plateformeback.password.PasswordResetService;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +39,7 @@ public class UsersControlleur {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final JwtCookieService jwtCookieService;
+    private final PasswordResetService passwordResetService;
     private final DemandeProfesseurService demandeProfesseurService;
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, path = "inscription")
@@ -189,4 +192,38 @@ public List<UserDTO> getAllUsers() {
                     .body(Map.of("message", "Erreur interne lors de la récupération de l'utilisateur courant"));
         }
     }
+
+    @PatchMapping("/password")
+public ResponseEntity<?> changerMotDePasse(@RequestBody Map<String, String> payload, Authentication auth) {
+    try {
+        Users currentUser = (Users) auth.getPrincipal();
+        usersService.changerMotDePasse(currentUser, payload.get("ancienMotDePasse"), payload.get("nouveauMotDePasse"));
+        return ResponseEntity.ok(Map.of("message", "Mot de passe modifié avec succès"));
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+    }
+}
+
+@PatchMapping("/profil")
+public ResponseEntity<?> modifierProfil(@RequestBody Map<String, String> payload, Authentication auth) {
+    Users currentUser = (Users) auth.getPrincipal();
+    Users updated = usersService.modifierProfil(currentUser, payload.get("name"));
+    return ResponseEntity.ok(UserDTO.fromEntity(updated));
+}
+
+@PostMapping("/mot-de-passe-oublie")
+public ResponseEntity<?> motDePasseOublie(@RequestBody Map<String, String> payload) {
+    passwordResetService.demanderReinitialisation(payload.get("email"));
+    return ResponseEntity.ok(Map.of("message", "Si cet email existe, un code de réinitialisation a été envoyé."));
+}
+
+@PostMapping("/reinitialiser-mot-de-passe")
+public ResponseEntity<?> reinitialiserMotDePasse(@RequestBody Map<String, String> payload) {
+    try {
+        passwordResetService.reinitialiser(payload.get("code"), payload.get("nouveauMotDePasse"));
+        return ResponseEntity.ok(Map.of("message", "Mot de passe réinitialisé avec succès"));
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+    }
+}
 }

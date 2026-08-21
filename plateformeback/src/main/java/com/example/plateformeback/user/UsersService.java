@@ -114,4 +114,25 @@ public class UsersService implements UserDetailsService {
             .map(UserDTO::fromEntity)
             .toList();
 }
+
+    @Transactional
+public Users changerMotDePasse(Users currentUser, String ancienMotDePasse, String nouveauMotDePasse) {
+    if (!passwordEncoder.matches(ancienMotDePasse, currentUser.getPassword())) {
+        throw new IllegalArgumentException("Ancien mot de passe incorrect");
+    }
+    if (nouveauMotDePasse == null || nouveauMotDePasse.length() < 8) {
+        throw new IllegalArgumentException("Le nouveau mot de passe doit contenir au moins 8 caractères");
+    }
+
+    currentUser.setPassword(passwordEncoder.encode(nouveauMotDePasse));
+    return usersRepository.save(currentUser);
+}
+
+@Transactional
+public Users modifierProfil(Users currentUser, String nom) {
+    if (nom != null && !nom.isBlank()) {
+        currentUser.setName(nom);
+    }
+    return usersRepository.save(currentUser);
+}
 }

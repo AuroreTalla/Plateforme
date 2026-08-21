@@ -23,12 +23,24 @@ public class MatiereService {
     private final ExerciceRepository exerciceRepository;
 
     public List<MatiereDTO> getAllMatieres() {
-        return matiereRepository.findAll().stream().map(MatiereDTO::fromEntity).toList();
-    }
+    return matiereRepository.findAll().stream()
+            .map(m -> MatiereDTO.fromEntity(
+                    m,
+                    coursRepository.countByMatiereId(m.getId()),
+                    exerciceRepository.countByMatiereId(m.getId())
+            ))
+            .toList();
+}
 
-    public MatiereDTO getById(Long id) {
-        return MatiereDTO.fromEntity(findEntity(id));
-    }
+public MatiereDTO getById(Long id) {
+    Matiere matiere = findEntity(id);
+    return MatiereDTO.fromEntity(
+            matiere,
+            coursRepository.countByMatiereId(id),
+            exerciceRepository.countByMatiereId(id)
+    );
+}
+
 
     public Matiere findEntity(Long id) {
         return matiereRepository.findById(id)
@@ -51,7 +63,8 @@ public class MatiereService {
         matiere.setDescription(description);
         matiere.setGroupe(savedGroupe);
 
-        return MatiereDTO.fromEntity(matiereRepository.save(matiere));
+        Matiere saved = matiereRepository.save(matiere);
+        return MatiereDTO.fromEntity(saved, 0, 0);
     }
 
     @Transactional

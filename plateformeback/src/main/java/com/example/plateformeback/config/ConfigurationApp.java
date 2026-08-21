@@ -49,12 +49,14 @@ public class ConfigurationApp {
                         "/v3/api-docs/**"
                 ).permitAll()
                 .requestMatchers("/users/**").permitAll()
+                .requestMatchers("/users/mot-de-passe-oublie", "/users/reinitialiser-mot-de-passe").permitAll()
                 .requestMatchers("/groupes/**").authenticated()
                 .requestMatchers("/reponses/**").permitAll()
                 .requestMatchers("/publications/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/app/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
