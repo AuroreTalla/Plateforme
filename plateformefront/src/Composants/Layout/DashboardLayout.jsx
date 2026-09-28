@@ -12,27 +12,6 @@ export default function DashboardLayout() {
   if (!currentUser) return null;
 
   return (
-<<<<<<< HEAD
-    <div className="flex h-full overflow-hidden">
-      {/* Sidebar */}
-      <SideBar isOpen={isOpen} setIsOpen={setIsOpen} user={currentUser} />
-
-      {/* Contenu principal */}
-      <main
-        className={`
-          flex-1 bg-gray-50 overflow-hidden transition-all duration-300
-          ${isOpen ? "lg:ml-80" : "lg:ml-20"}
-        `}
-      >
-        {/* IMPORTANT : pas de padding ici */}
-        <div className="h-full flex flex-col overflow-hidden">
-          <Outlet />
-        </div>
-      </main>
-    </div>
-  );
-}
-=======
     <GroupesProvider>
       <MatiereProvider>
       <div className="flex h-full min-h-0">
@@ -48,4 +27,3 @@ export default function DashboardLayout() {
     </GroupesProvider>
   );
 }
->>>>>>> origin/main

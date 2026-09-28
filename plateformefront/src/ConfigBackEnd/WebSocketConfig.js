@@ -5,17 +5,12 @@ let stompClient = null;
 
 /*CONNEXION WEBSOCKET*/
 export const connectWebSocket = (onConnected, onError) => {
-<<<<<<< HEAD
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
-  const socket = new SockJS(`${backendUrl}/ws`);
-=======
 
   // Éviter plusieurs connexions simultanées
   if (stompClient && stompClient.active) {
     console.log('⚠️ WebSocket déjà actif');
     return stompClient;
   }
->>>>>>> origin/main
 
   stompClient = new Client({
 
@@ -89,11 +84,6 @@ export const subscribeToGroupe = (
     return null;
   }
 
-<<<<<<< HEAD
-  return stompClient.subscribe(`/topic/groupe/${groupeNom}`, (message) => {
-    const messageData = JSON.parse(message.body);
-    callback(messageData);
-=======
   if (!groupeId) {
     console.error('❌ ID du groupe manquant');
     return null;
@@ -242,7 +232,6 @@ export const subscribeToPublications = (groupeId, callback) => {
     } catch (error) {
       console.error('❌ Erreur parsing publication WebSocket:', error);
     }
->>>>>>> origin/main
   });
 };
 
@@ -253,31 +242,16 @@ export const sendPublication = (groupeId, titre, content, userEmail) => {
     return false;
   }
 
-<<<<<<< HEAD
-=======
   if (!groupeId) {
     console.error('❌ ID du groupe manquant');
     return false;
   }
 
->>>>>>> origin/main
   if (!userEmail) {
     console.error('❌ Email utilisateur manquant');
     return false;
   }
 
-<<<<<<< HEAD
-  console.log('📤 Envoi message:', { groupeNom, content, userEmail });
-
-  stompClient.publish({
-    destination: `/app/sendMessage/${groupeNom}`,
-    body: JSON.stringify({
-      content,
-      userEmail
-    })
-  });
-
-=======
   if (!titre?.trim() || !content?.trim()) {
     console.error('❌ Titre ou contenu vide');
     return false;
@@ -296,7 +270,6 @@ export const sendPublication = (groupeId, titre, content, userEmail) => {
       userEmail
     })
   });
->>>>>>> origin/main
   return true;
 };
 

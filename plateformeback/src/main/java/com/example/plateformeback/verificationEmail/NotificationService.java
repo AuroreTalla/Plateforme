@@ -15,7 +15,7 @@ import java.util.Map;
 @Service 
 public class NotificationService {
 
-    @Value("${brevo.api.key}")
+    @Value("${brevo.api.key:}")
     private String brevoApiKey;
 
     @Value("${brevo.sender.email:noreplyprepasconcours@gmail.com}")
