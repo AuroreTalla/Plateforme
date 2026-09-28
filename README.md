@@ -1,6 +1,8 @@
-# Plateforme Éducative
+#Plateforme Éducative
 
-Plateforme web permettant aux élèves et professeurs d'accéder à des matières, suivre des cours et exercices, échanger via des forums de discussion, et à l'administration de superviser l'ensemble du système.
+Plateforme web dédiée à la préparation aux concours des grandes écoles camerounaises.
+
+Elle permet aux élèves et aux professeurs d'accéder aux matières, cours et exercices, de participer à des forums de discussion par matière et de bénéficier d'un espace de suivi. L'administration dispose d'un espace dédié à la gestion et à la supervision de la plateforme.
 
 ## Fonctionnalités
 
@@ -20,7 +22,7 @@ Plateforme web permettant aux élèves et professeurs d'accéder à des matière
 ### Matières, Cours & Exercices
 - Chaque matière est liée à un groupe de discussion (forum) dédié
 - Ajout de contenus pédagogiques : texte, image, vidéo, audio, PDF, document
-- Suppression protégée : une matière ne peut être supprimée sans nettoyer son forum associé
+- Gestion des matières par l'administration
 
 ### Forums (Publications & Réponses)
 - Système de questions/réponses par matière (type StackOverflow)
@@ -58,7 +60,7 @@ com.example.plateformeback
 ├── upload/ Upload de fichiers
 └── exception/ Gestion centralisée des erreurs
 
-**Stack** : Java 21, Spring Boot 3.5, Spring Security (JWT), Spring Data JPA (Hibernate), MariaDB/MySQL, WebSocket (STOMP/SockJS), Lombok.
+**Stack**: Java 21, Spring Boot 3.5, Spring Security (JWT), Spring Data JPA (Hibernate), MariaDB/MySQL, WebSocket (STOMP/SockJS), Lombok.
 
 ### Frontend — React
 src/
@@ -143,4 +145,6 @@ Adapter l'URL de l'API backend dans `src/ConfigBackEnd/Api.js`.
 - Autorisations par rôle (`@PreAuthorize`) sur les endpoints sensibles
 - CORS restreint aux origines connues
 - Upload de fichiers : whitelist d'extensions, limite de taille par type
+
+
 
