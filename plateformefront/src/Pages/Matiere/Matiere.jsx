@@ -22,6 +22,8 @@ import {
   buildMediaUrl,
 } from '../../ConfigBackEnd/MatiereService';
 import AjoutContenuForm from './AjoutContenuForm';
+import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
+
 
 const typeIcons = {
   TEXTE: ArticleIcon,
@@ -70,11 +72,14 @@ function MatierePage({ defaultTab = 'cours' }) {
     load();
   }, [load]);
 
+  const { refetch: refetchMatieres } = useMatieres();
+
   const handleAjout = async ({ titre, type, contenu, mediaUrl }) => {
     const ajouter = active === 'cours' ? ajouterCours : ajouterExercice;
     await ajouter(matiereId, titre, type, contenu, mediaUrl);
     setShowForm(false);
     await load();
+    await refetchMatieres();
   };
 
   const handleSupprimer = async (id) => {
@@ -83,6 +88,7 @@ function MatierePage({ defaultTab = 'cours' }) {
       const supprimer = active === 'cours' ? supprimerCours : supprimerExercice;
       await supprimer(id);
       await load();
+      await refetchMatieres();
     } catch (e) {
       console.error('❌ Erreur suppression contenu :', e);
     }

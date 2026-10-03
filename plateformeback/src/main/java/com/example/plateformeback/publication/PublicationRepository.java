@@ -11,6 +11,10 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
     List<Publication> findByGroupeId(Long groupeId);
 
     long countByGroupeIdAndStatut(Long groupeId, String statut);
+
+    @Query("SELECT g.id AS groupeId, COUNT(p) AS total FROM Publication p JOIN p.groupe g " +
+       "WHERE p.statut = 'NON_RESOLUE' GROUP BY g.id")
+List<GroupeCount> countNonResoluesGroupedByGroupe();
     
     @Query("SELECT p FROM Publication p WHERE p.groupe.id = :groupeId " +
            "AND (:keyword IS NULL OR " +

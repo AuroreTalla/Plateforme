@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -49,7 +51,9 @@ public class PublicationService {
                 .orElseThrow(() -> new RuntimeException("Publication introuvable : " + id));
     }
 
-    public long compterNonResoluesParGroupe(Long groupeId) {
-    return publicationRepository.countByGroupeIdAndStatut(groupeId, "NON_RESOLUE");
+    @Transactional(readOnly = true)
+public Map<Long, Long> compterNonResoluesParGroupe() {
+    return publicationRepository.countNonResoluesGroupedByGroupe().stream()
+            .collect(Collectors.toMap(GroupeCount::getGroupeId, GroupeCount::getTotal));
 }
 }

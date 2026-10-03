@@ -12,12 +12,10 @@ export default function DashboardProfesseur({ currentUser, showHeader = true }) 
   const [nonResolues, setNonResolues] = useState({});
 
   useEffect(() => {
-  matieres.forEach((m) => {
-    compterPublicationsNonResolues(m.groupeId)
-      .then((res) => setNonResolues((prev) => ({ ...prev, [m.id]: res.data.count })))
-      .catch(() => {});
-  });
-}, [matieres]);
+  compterPublicationsNonResolues()
+    .then((res) => setNonResolues(res.data))
+    .catch(() => {});
+}, []);
 
   return (
     <Box sx={{ maxWidth: 1200, mx: showHeader ? 'auto' : 0 }}>
@@ -46,9 +44,9 @@ export default function DashboardProfesseur({ currentUser, showHeader = true }) 
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
   {m.nbCours} cours · {m.nbExercices} exercices
 </Typography>
-{nonResolues[m.id] > 0 && (
+{nonResolues[m.groupeId] > 0 && (
   <Chip
-    label={`${nonResolues[m.id]} question(s) en attente`}
+    label={`${nonResolues[m.groupeId]} question(s) en attente`}
     size="small"
     sx={{ mt: 1, bgcolor: '#ffedd5', color: '#9a3412', fontWeight: 600 }}
   />

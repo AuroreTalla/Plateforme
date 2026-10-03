@@ -25,8 +25,7 @@ public class Groupe {
         private String nom;
         private String description;
 
-        // ✅ IMPORTANT : cascade ALL pour persister la relation
-        @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+        @ManyToMany(fetch = FetchType.LAZY)
         @JoinTable(
                 name = "groupe_users",
                 joinColumns = @JoinColumn(name = "groupe_id"),

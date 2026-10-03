@@ -22,5 +22,5 @@ export const ajouterExercice = (matiereId, titre, type, contenu, mediaUrl, ordre
   api.post(`/matieres/${matiereId}/exercices`, { titre, type, contenu, mediaUrl, ordre });
 export const supprimerExercice = (exerciceId) => api.delete(`/matieres/exercices/${exerciceId}`);
 
-export const compterPublicationsNonResolues = (groupeId) =>
-  api.get(`/publications/groupe/${groupeId}/non-resolues/count`);
+export const compterPublicationsNonResolues = () =>
+  api.get("/publications/non-resolues/count");

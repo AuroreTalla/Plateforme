@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Map;
 
 @AllArgsConstructor
 @Slf4j
@@ -22,12 +24,19 @@ public class MatiereService {
     private final CoursRepository coursRepository;
     private final ExerciceRepository exerciceRepository;
 
-    public List<MatiereDTO> getAllMatieres() {
+    @Transactional(readOnly = true)
+public List<MatiereDTO> getAllMatieres() {
+    Map<Long, Long> coursParMatiere = coursRepository.countGroupedByMatiere().stream()
+            .collect(Collectors.toMap(MatiereCount::getMatiereId, MatiereCount::getTotal));
+
+    Map<Long, Long> exosParMatiere = exerciceRepository.countGroupedByMatiere().stream()
+            .collect(Collectors.toMap(MatiereCount::getMatiereId, MatiereCount::getTotal));
+
     return matiereRepository.findAll().stream()
             .map(m -> MatiereDTO.fromEntity(
                     m,
-                    coursRepository.countByMatiereId(m.getId()),
-                    exerciceRepository.countByMatiereId(m.getId())
+                    coursParMatiere.getOrDefault(m.getId(), 0L),
+                    exosParMatiere.getOrDefault(m.getId(), 0L)
             ))
             .toList();
 }
