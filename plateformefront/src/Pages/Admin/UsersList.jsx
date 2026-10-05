@@ -12,8 +12,8 @@ import {
     MenuBook as ProfIcon,
     AdminPanelSettings as AdminIcon
 } from '@mui/icons-material';
-import { getAllUsers } from '../../ConfigBackEnd/UserService';
-import { formatDate } from '../../ConfigBackEnd/FormatDate';
+import { getAllUsers } from '../../Services/UserService';
+import { formatDate } from '../../Services/FormatDate';
 
 const roleConfig = {
     ELEVE: { icon: StudentIcon, bg: '#f1f5f9', color: '#64748b' },

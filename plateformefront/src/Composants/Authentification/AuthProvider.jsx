@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import LoadingPage from "../LoadingPage.jsx";
-import { getCurrentUser, logoutUser, loginUser } from "../../ConfigBackEnd/UserService";
+import { getCurrentUser, logoutUser, loginUser } from "../../Services/UserService.js";
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);

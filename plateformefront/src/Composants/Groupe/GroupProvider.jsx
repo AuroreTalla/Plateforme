@@ -1,33 +1,14 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { getAllGroupes } from "../../ConfigBackEnd/GroupService";
-import { GroupContext } from "./GroupContext";
+import { createContext, useContext } from "react";
+import { getAllGroupes } from "../../Services/GroupService";
+import { useFetchedResource } from "../../hook/useFetchedResource";
+
+const GroupContext = createContext({ groupes: [], loading: true });
 
 export function GroupesProvider({ children }) {
-  const [groupes, setGroupes] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadGroupes = async () => {
-      try {
-        setLoading(true);
-        const res = await getAllGroupes();
-          console.log("📦 Réponse brute getAllGroupes :", res.data);
-        if (mounted) setGroupes(res.data);
-      } catch (error) {
-        console.error("❌ Erreur récupération groupes :", error);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    loadGroupes();
-    return () => { mounted = false; };
-  }, []);
+  const { data: groupes, loading, refetch } = useFetchedResource(getAllGroupes, []);
 
   return (
-    <GroupContext.Provider value={{ groupes, loading }}>
+    <GroupContext.Provider value={{ groupes, loading, refetch }}>
       {children}
     </GroupContext.Provider>
   );

@@ -4,7 +4,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ForumIcon from '@mui/icons-material/Forum';
 import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 import { useState, useEffect } from 'react';
-import { compterPublicationsNonResolues } from '../../ConfigBackEnd/MatiereService';
+import { compterPublicationsNonResolues } from '../../Services/MatiereService.js';
 
 export default function DashboardProfesseur({ currentUser, showHeader = true }) {
   const navigate = useNavigate();

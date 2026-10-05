@@ -9,7 +9,7 @@ import {
   Clock,
   AlertCircle
 } from "lucide-react";
-import { api } from "../../ConfigBackEnd/Api";
+import { api } from "../../Services/Api";
 import LoadingPage from "../../Composants/LoadingPage";
 
 export default function InfoProf() {

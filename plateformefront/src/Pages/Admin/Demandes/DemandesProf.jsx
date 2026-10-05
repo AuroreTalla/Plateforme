@@ -9,8 +9,8 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { getDemandesProfesseur, getHistoriqueProfesseur, validerProfesseur,
-     refuserProfesseur, revoquerProfesseur } from '../../../ConfigBackEnd/ProfService';
-import { formatDate } from '../../../ConfigBackEnd/FormatDate';
+     refuserProfesseur, revoquerProfesseur } from '../../../Services/ProfService';
+import { formatDate } from '../../../Services/FormatDate';
 
 const statutConfig = {
     EN_ATTENTE: { label: 'En attente', color: '#92400e', bg: '#fef3c7' },

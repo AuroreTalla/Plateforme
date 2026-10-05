@@ -12,12 +12,12 @@ import {
     Star as StarIcon
 } from '@mui/icons-material';
 import { AuthContext } from "../../Composants/Authentification/AuthContext";
-import { envoyerFeedback, getAllFeedbacks } from '../../ConfigBackEnd/FeedbackService';
-import { formatDate } from '../../ConfigBackEnd/FormatDate';
+import { envoyerFeedback, getAllFeedbacks } from '../../Services/FeedbackService';
+import { formatDate } from '../../Services/FormatDate';
+import { useRole } from '../../hooks/useRole';
 
 export default function Feedback() {
-    const { currentUser } = useContext(AuthContext);
-    const isAdmin = currentUser?.statut === 'ADMIN';
+    const { isAdmin } = useRole();
 
     if (isAdmin) {
         return <FeedbackAdminView />;

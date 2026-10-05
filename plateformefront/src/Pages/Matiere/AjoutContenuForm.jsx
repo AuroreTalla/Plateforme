@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Paper, TextField, Button, MenuItem, LinearProgress, Alert } from '@mui/material';
-import { uploadFichier } from '../../ConfigBackEnd/UploadService';
+import { uploadFichier } from '../../Services/UploadService';
 
 const TYPES = [
   { value: 'TEXTE', label: 'Texte' },

@@ -5,11 +5,11 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AuthContext } from '../../Composants/Authentification/AuthContext';
-import { getPublicationsByGroupe } from '../../ConfigBackEnd/PublicationService';
-import { subscribeToPublications, sendPublication } from '../../ConfigBackEnd/WebSocketConfig';
+import { getPublicationsByGroupe } from '../../Services/PublicationService';
+import { subscribeToPublications, sendPublication } from '../../Services/WebSocketConfig';
 import PublicationDetail from './PublicationDetail';
 import NewPublicationForm from './NewPublicationForm';
-import { formatDate } from '../../ConfigBackEnd/FormatDate';
+import { formatDate } from '../../Services/FormatDate';
 
 const PAGE_SIZE = 10;
 

@@ -20,9 +20,10 @@ import {
   supprimerCours,
   supprimerExercice,
   buildMediaUrl,
-} from '../../ConfigBackEnd/MatiereService';
+} from '../../Services/MatiereService.js';
 import AjoutContenuForm from './AjoutContenuForm';
 import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
+import { useRole } from '../../hooks/useRole';
 
 
 const typeIcons = {
@@ -37,10 +38,8 @@ const typeIcons = {
 function MatierePage({ defaultTab = 'cours' }) {
   const { matiereId, tab } = useParams();
   const active = tab || defaultTab;
-  const { currentUser } = useContext(AuthContext);
 
-  const peutModifier = currentUser?.statut === 'ADMIN' || currentUser?.statut === 'PROFESSEUR';
-
+  const { isProfOuAdmin: peutModifier } = useRole();
   const [matiere, setMatiere] = useState(null);
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);

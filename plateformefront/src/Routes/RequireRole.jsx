@@ -1,12 +1,10 @@
-import { useContext } from "react";
-import { AuthContext } from "../Composants/Authentification/AuthContext";
 import { Navigate } from "react-router-dom";
+import { useRole } from "../hooks/useRole";
 
 export function RequireRole({ children, allowedRoles }) {
-  const { currentUser } = useContext(AuthContext);
+  const { hasRole } = useRole();
 
-  // À ce stade, ProtectedRoute a déjà garanti que currentUser existe
-  if (!allowedRoles.includes(currentUser.statut)) {
+  if (!hasRole(...allowedRoles)) {
     return <Navigate to="/dashboard" replace />;
   }
 
