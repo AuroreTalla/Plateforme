@@ -32,6 +32,14 @@ public class DemandeProfesseur {
     @JsonIgnore
     private Users users;
 
-    @Column(name = "date_validation")
+    @Column(name = "date_demande")
+private LocalDateTime dateDemande;
+
+@PrePersist
+public void prePersist() {
+    this.dateDemande = LocalDateTime.now();
+}
+
+@Column(name = "date_validation")
     private LocalDateTime dateValidation;
 }

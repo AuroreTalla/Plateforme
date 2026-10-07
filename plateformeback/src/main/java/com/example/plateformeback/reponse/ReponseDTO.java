@@ -17,14 +17,19 @@ public record ReponseDTO(
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public static ReponseDTO fromEntity(Reponse reponse) {
+
+        UserDTO user = reponse.getSender() != null
+            ? UserDTO.fromEntity(reponse.getSender())
+            : null;
+
         return new ReponseDTO(
                 reponse.getId(),
                 reponse.getContent(),
                 reponse.getDateReponse().format(FORMATTER),
-                UserDTO.fromEntity(reponse.getSender()),
+                user,
                 reponse.getPublication().getId(),
                 reponse.isEstSolutionProposee(),
-                reponse.isValideeParAdmin(),
+                reponse.isValidee(),
                 reponse.getDateValidation() != null
                         ? reponse.getDateValidation().format(FORMATTER)
                         : null

@@ -165,7 +165,7 @@ function PublicationList({ groupeId, wsConnected, onBack  }) {
                     {pub.content}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                    Par {pub.user?.name || 'Utilisateur'} · {formatDate(pub.datePublication)}
+                    Par {pub.user?.name || 'Utilisateur supprimé'} · {formatDate(pub.datePublication)}
                   </Typography>
                 </CardContent>
               </CardActionArea>

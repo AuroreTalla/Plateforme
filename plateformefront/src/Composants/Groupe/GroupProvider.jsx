@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import { getAllGroupes } from "../../Services/GroupService";
-import { useFetchedResource } from "../../hook/useFetchedResource";
+import { useFetchedResource } from "../../hooks/useFetchedResource";
 
 const GroupContext = createContext({ groupes: [], loading: true });
 

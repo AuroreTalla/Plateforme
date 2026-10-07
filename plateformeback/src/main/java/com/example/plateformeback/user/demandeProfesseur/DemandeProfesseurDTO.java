@@ -7,6 +7,7 @@ public record DemandeProfesseurDTO(
         Long id,
         String statut,
         UserDTO user,
+        String dateDemande,
         String dateValidation
 ) {
     private static final DateTimeFormatter FORMATTER =
@@ -17,6 +18,9 @@ public record DemandeProfesseurDTO(
                 demande.getId(),
                 demande.getStatut().name(),
                 UserDTO.fromEntity(demande.getUsers()),
+                demande.getDateDemande() != null
+                        ? demande.getDateDemande().format(FORMATTER)
+                        : null,
                 demande.getDateValidation() != null
                         ? demande.getDateValidation().format(FORMATTER)
                         : null

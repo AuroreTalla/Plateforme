@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import { getAllMatieres } from "../../Services/MatiereService";
-import { useFetchedResource } from "../../hook/useFetchedResource";
+import { useFetchedResource } from "../../hooks/useFetchedResource";
 
 const MatiereContext = createContext({ matieres: [], loading: true });
 

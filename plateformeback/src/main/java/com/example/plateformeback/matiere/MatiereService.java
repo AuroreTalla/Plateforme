@@ -5,6 +5,7 @@ import com.example.plateformeback.exercice.*;
 import com.example.plateformeback.enums.TypeContenu;
 import com.example.plateformeback.groupe.Groupe;
 import com.example.plateformeback.groupe.GroupeRepository;
+import com.example.plateformeback.publication.PublicationRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class MatiereService {
     private final GroupeRepository groupeRepository;
     private final CoursRepository coursRepository;
     private final ExerciceRepository exerciceRepository;
+    private final PublicationRepository publicationRepository;
 
     @Transactional(readOnly = true)
 public List<MatiereDTO> getAllMatieres() {
@@ -77,19 +79,24 @@ public MatiereDTO getById(Long id) {
     }
 
     @Transactional
-    public void supprimerMatiere(Long matiereId) {
+public void supprimerMatiere(Long matiereId) {
     Matiere matiere = findEntity(matiereId);
     Long groupeId = matiere.getGroupe().getId();
 
-    // 1. Supprime la matière — cascade automatique sur cours/exercice
-    matiereRepository.delete(matiere);
+    long nbPublications = publicationRepository.countByGroupeId(groupeId);
+    if (nbPublications > 0) {
+        throw new IllegalStateException(
+            "Impossible de supprimer cette matière : " + nbPublications +
+            " publication(s) existent encore dans son forum. " +
+            "La suppression d'une matière avec un historique actif n'est pas autorisée."
+        );
+    }
 
-    // 2. Le groupe n'est plus référencé, on peut le supprimer à son tour
+    matiereRepository.delete(matiere);
     groupeRepository.deleteById(groupeId);
 
     log.info("Matière {} et son groupe {} supprimés", matiereId, groupeId);
 }
-
     // ---- Cours ----
 
     public List<CoursDTO> getCoursByMatiere(Long matiereId) {

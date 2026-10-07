@@ -23,7 +23,7 @@ import Dashboard from "../Pages/Dashboard/Dashboard";
 import Forum from "../Pages/Forum/Forum";
 import InfoProf from "../Pages/Admin/InfoProf";
 
-import MatierePage from "../Pages/Matiere/Matiere";
+import MatierePage from "../Pages/Matiere/MatierePage";
 
 // Pages Communes
 import Parametre from "../Pages/Parametre/Parametre";

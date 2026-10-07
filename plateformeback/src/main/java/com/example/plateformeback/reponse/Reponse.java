@@ -25,7 +25,7 @@ public class Reponse {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     @JsonBackReference
     private Users sender;
 
@@ -50,7 +50,8 @@ public class Reponse {
     @Column(name = "est_solution_proposee", nullable = false)
     private boolean estSolutionProposee;
 
-    @Column(name = "validee_par_admin", nullable = false)
-    private boolean valideeParAdmin;
+    public boolean isValidee() {
+    return this.valideeParUserId != null;
+}
 
 }
