@@ -17,8 +17,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log("❌ 401 - Non authentifié");
       // Rediriger SEULEMENT si pas déjà sur la page de login
-      if (!window.location.pathname.includes('/connexion')) {
-        window.location.href = "/connexion";
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);
