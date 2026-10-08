@@ -1,17 +1,18 @@
 import { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { loginUser } from "../../ConfigBackEnd/UserService";
+//import { loginUser } from "../../api/UserService";
 import { AuthContext } from "../../Composants/Authentification/AuthContext";
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SchoolIcon from '@mui/icons-material/School';
+//import img from "../../assets/img1.jpeg"
 
 function Connexion() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setCurrentUser } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
 
   const defaultEmail = location.state?.email || "";
   const messageFromNavigation = location.state?.message || "";
@@ -32,14 +33,14 @@ function Connexion() {
     setLoading(true);
 
     try {
-      const response = await loginUser(email, password);
-      setCurrentUser(response.data);
-
-      if (response.data.statut === "PROFESSEUR") {
-        navigate("/dashboard", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      const response = await login(email, password);
+      // ✅ Sauvegarder l'utilisateur dans le contexte
+      if (!response.success) {
+      setError(response.error);
+      return;
+    }
+      navigate("/dashboard", { replace: true });
+    
     } catch (err) {
       if (err.response?.status === 401) {
         setError("Email ou mot de passe incorrect");
@@ -57,17 +58,18 @@ function Connexion() {
     <div className="h-screen flex items-center justify-center bg-[#f5faf7] overflow-hidden">
 
       <div className="flex w-full max-w-[1100px] h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
- 
+
         {/* Section Image - 40% */}
-        <div 
+        <div
           className="w-1/2 bg-cover bg-center bg-no-repeat relative hidden lg:block"
           style={{
             //backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800')"
+            //backgroundImage: `url(${img})`
             backgroundImage: "url('/assets/img1.jpeg')"
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-800/30 to-purple-600/30"></div>
-          
+
           {/* Texte sur l'image */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8">
             <SchoolIcon style={{ fontSize: 100, marginBottom: 24 }} />
@@ -80,7 +82,7 @@ function Connexion() {
 
         {/* Section Formulaire - 60% */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 md:p-12 bg-white overflow-hidden">
-          
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Connexion</h1>
@@ -102,7 +104,7 @@ function Connexion() {
 
           {/* Formulaire */}
           <div className="w-full max-w-md">
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email avec peer */}
               <div className="relative h-14">
                 <AlternateEmailIcon className="login-icon-design" />
@@ -162,8 +164,7 @@ function Connexion() {
               {/* Bouton de soumission - CENTRÉ */}
               <div className="flex justify-center">
                 <button
-                  type="button"
-                  onClick={handleSubmit}
+                  type="submit"
                   disabled={loading}
                   className="login-button-design"
                 >
@@ -180,7 +181,7 @@ function Connexion() {
                   )}
                 </button>
               </div>
-            </div>
+            </form>
 
             {/* Lien inscription */}
             <p className="text-center text-gray-600 mt-8 text-sm">

@@ -9,13 +9,13 @@ import java.util.stream.Stream;
 @Repository
 public interface JwtRepository extends CrudRepository<Jwt, Long> {  // ✅ Integer → Long
 
-    Optional<Jwt> findByValeurAndDesactiveAndExpire(String valeur, boolean desactive, boolean expire);
+    Optional<Jwt> findByValeurAndDesactive(String valeur, boolean desactive);
 
-    Optional<Jwt> findByUsersEmailAndDesactiveAndExpire(String email, boolean desactive, boolean expire);
+    Optional<Jwt> findByUsersEmailAndDesactive(String email, boolean desactive);
 
     Stream<Jwt> findByUsersEmail(String email);
 
     Optional<Jwt> findByRefreshTokenValeur(String valeur);
 
-    void deleteAllByExpireAndDesactive(boolean expire, boolean desactive);
+    void deleteAllByDesactive(boolean desactive);
 }

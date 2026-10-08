@@ -1,5 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { RequireRole } from "./RequireRole";
+
+import { Outlet } from "react-router-dom";
 
 // Layouts
 import Layout from "../Composants/Layout/GlobalLayout";
@@ -7,7 +10,8 @@ import DashboardLayout from "../Composants/Layout/DashboardLayout";
 
 // Public pages
 import PageAcceuil from "../Pages/Acceuil/PageAcceuil";
-import Apropos from "../Composants/NavBar/Apropos";
+import APropos from "../Pages/APropos/APropos";
+import Contact from "../Pages/Contact/Contact";
 import Inscription from "../Pages/Inscription/Inscription";
 import ActivationCode from "../Pages/Inscription/ActivationCode";
 import Connexion from "../Pages/Connexion/Connexion";
@@ -19,7 +23,7 @@ import Dashboard from "../Pages/Dashboard/Dashboard";
 import Forum from "../Pages/Forum/Forum";
 import InfoProf from "../Pages/Admin/InfoProf";
 
-import MatierePage from "../Pages/Matiere/Matiere";
+import MatierePage from "../Pages/Matiere/MatierePage";
 
 // Pages Communes
 import Parametre from "../Pages/Parametre/Parametre";
@@ -51,7 +55,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/", element: <PageAcceuil /> },
-      { path: "/apropos", element: <Apropos /> },
+      { path: "/about", element: <APropos /> },
+      { path: "/contact", element: <Contact /> },
       {
         path: "/dashboard",
         element: (
@@ -63,7 +68,14 @@ const router = createBrowserRouter([
           { index: true, element: <Dashboard /> },
 
           { path: "forum/:sujet?", element: <Forum /> },
-          { path: "infoprof", element: <InfoProf /> },
+          {
+            path: "infoprof",
+            element: (
+              <RequireRole allowedRoles={["ADMIN"]}>
+                <InfoProf />
+              </RequireRole>
+            ),
+          },
           { path: "matiere/:matiereId/cours", element: <MatierePage defaultTab="cours" /> },
           { path: "matiere/:matiereId/exercices", element: <MatierePage defaultTab="exercices" /> },
 
@@ -72,13 +84,39 @@ const router = createBrowserRouter([
           { path: "feedback", element: <Feedback /> },
 
           // Routes Professeur
-          { path: "demandes", element: <MesDemandes /> },
+          {
+            path: "mes-demandes",
+            element: (
+              <RequireRole allowedRoles={["PROFESSEUR", "ADMIN"]}>
+                <MesDemandes />
+              </RequireRole>
+            ),
+          },
 
           // Routes Admin
-          { path: "users", element: <UsersList /> },
-          { path: "forums", element: <ForumsAdmin /> },
+          {
+            path: "users",
+            element: (
+              <RequireRole allowedRoles={["ADMIN"]}>
+                <UsersList />
+              </RequireRole>
+            ),
+          },
+          {
+            path: "forums",
+            element: (
+              <RequireRole allowedRoles={["ADMIN"]}>
+                <ForumsAdmin />
+              </RequireRole>
+            ),
+          },
           {
             path: "matieres",
+            element: (
+              <RequireRole allowedRoles={["ADMIN"]}>
+                <Outlet />
+              </RequireRole>
+            ),
             children: [
               { path: "list", element: <MatiereList /> },
               { path: "create", element: <MatiereCreate /> },
@@ -86,6 +124,11 @@ const router = createBrowserRouter([
           },
           {
             path: "demandes",
+            element: (
+              <RequireRole allowedRoles={["ADMIN"]}>
+                <Outlet />
+              </RequireRole>
+            ),
             children: [
               { path: "prof", element: <DemandesProf /> },
               { path: "matieres", element: <DemandesMatieres /> },

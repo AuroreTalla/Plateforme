@@ -25,19 +25,9 @@ public class Jwt {
         @Column(name = "desactive")
         private boolean desactive;
 
-        @Column(name = "expire")
-        private boolean expire;
-
         @OneToOne(cascade = CascadeType.ALL)
         @JoinColumn(name = "refresh_token_id")
         private RefreshToken refreshToken;
-
-        @Column(name = "date_expiration")
-        private Instant dateExpiration;
-
-        public boolean isExpired() {
-            return dateExpiration != null && Instant.now().isAfter(dateExpiration);
-        }
 
         @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE})
         @JoinColumn(name = "user_id", nullable = false)

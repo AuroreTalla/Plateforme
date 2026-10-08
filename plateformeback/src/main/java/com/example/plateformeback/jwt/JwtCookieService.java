@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseCookie;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -38,14 +39,17 @@ public class JwtCookieService {
     }
 
     private void addCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
-        Cookie cookie = new Cookie(name, value != null ? value : "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAgeSeconds);
-        cookie.setAttribute("SameSite", cookieSameSite);
-        response.addCookie(cookie);
-    }
+
+    ResponseCookie cookie = ResponseCookie.from(name, value != null ? value : "")
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .path("/")
+            .sameSite(cookieSameSite)
+            .maxAge(maxAgeSeconds)
+            .build();
+
+    response.addHeader("Set-Cookie", cookie.toString());
+}
 
     public void clearTokens(HttpServletResponse response) {
         addCookie(response, JwtService.BEARER, "", 0);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { connectWebSocket, disconnectWebSocket } from '../../ConfigBackEnd/WebSocketConfig';
+import { connectWebSocket, disconnectWebSocket } from '../../Services/WebSocketConfig';
 import PublicationList from './PublicationList';
 
 function Forum() {

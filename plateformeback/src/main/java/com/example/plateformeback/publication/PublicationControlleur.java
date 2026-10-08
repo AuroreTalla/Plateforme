@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
+
 import java.util.Map;
 
 @Slf4j
@@ -79,9 +79,9 @@ public class PublicationControlleur {
         }
     }
 
-    @GetMapping("/groupe/{groupeId}/non-resolues/count")
-public ResponseEntity<?> compterNonResolues(@PathVariable Long groupeId) {
-    long count = publicationService.compterNonResoluesParGroupe(groupeId);
-    return ResponseEntity.ok(Map.of("count", count));
+    @GetMapping("/non-resolues/count")
+    public ResponseEntity<?> compterNonResoluesToutesMatieres() {
+    Map<Long, Long> counts = publicationService.compterNonResoluesParGroupe();
+    return ResponseEntity.ok(counts);
 }
 }

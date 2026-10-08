@@ -54,7 +54,6 @@ public class JwtService {
                 .users(user)
                 .creation(Instant.now())
                 .expiration(Instant.now().plusMillis(refreshExpirationMs))
-                .expire(false)
                 .build();
         refreshToken = refreshTokenRepository.save(refreshToken);
 
@@ -62,9 +61,7 @@ public class JwtService {
                 .valeur(sha256Hex(accessTokenStr))  // ✅ Hash manuellement
                 .users(user)
                 .refreshToken(refreshToken)
-                .dateExpiration(Instant.now().plusMillis(jwtExpirationMs))
                 .desactive(false)
-                .expire(false)
                 .build();
         jwtRepository.save(jwt);
 
@@ -93,7 +90,6 @@ public class JwtService {
         jwtRepository.findByRefreshTokenValeur(hashedRefresh)
                 .ifPresent(oldJwt -> {
                     oldJwt.setDesactive(true);
-                    oldJwt.setExpire(true);
                     jwtRepository.save(oldJwt);
                 });
 
@@ -104,9 +100,7 @@ public class JwtService {
                 .valeur(sha256Hex(newAccessToken))  // ✅ Hash manuellement
                 .users(user)
                 .refreshToken(refreshToken)
-                .dateExpiration(Instant.now().plusMillis(jwtExpirationMs))
                 .desactive(false)
-                .expire(false)
                 .build();
         jwtRepository.save(newJwt);
 
@@ -177,7 +171,6 @@ public class JwtService {
     public void deconnexion(Users user) {
         jwtRepository.findByUsersEmail(user.getEmail()).forEach(jwt -> {
             jwt.setDesactive(true);
-            jwt.setExpire(true);
             jwtRepository.save(jwt);
         });
         log.info("Utilisateur {} déconnecté", user.getEmail());

@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { Box, Typography, Button, TextField, CircularProgress } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
-import { activationUser } from "../../ConfigBackEnd/UserService";
+import { activationUser } from "../../Services/UserService";
 import { AuthContext } from "../../Composants/Authentification/AuthContext";
 
 function ActivationCode() {

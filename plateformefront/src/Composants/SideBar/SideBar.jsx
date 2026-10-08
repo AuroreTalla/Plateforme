@@ -10,7 +10,6 @@ import {
 import { useMatieres } from "../Matiere/MatiereProvider.jsx";
 import { SideBarItems, buildCoursSubItems, buildExercicesSubItems, buildForumSubItems } from "./SideBarItems";
 
-
 export default function SideBar({ isOpen, setIsOpen, user }) {
   const navigate = useNavigate();
   const location = useLocation();

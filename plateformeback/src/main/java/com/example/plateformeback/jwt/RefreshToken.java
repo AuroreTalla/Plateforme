@@ -14,28 +14,25 @@ import java.time.Instant;
 @Table(name = "refresh_token")
 public class RefreshToken {
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-        private boolean expire;
+    @Column(name = "valeur", nullable = false, unique = true, length = 512)
+    private String valeur;
 
-        @Column(name = "valeur", nullable = false, unique = true, length = 512)
-        private String valeur;
+    private Instant creation;
+    private Instant expiration;
 
-        private Instant creation;
-        private Instant expiration;
+    public boolean isExpired() {
+        return expiration != null && Instant.now().isAfter(expiration);
+    }
 
-        public boolean isExpired() {
-            return expiration != null && Instant.now().isAfter(expiration);
-        }
+    public boolean isActive() {
+        return !isExpired();
+    }
 
-        public boolean isActive() {
-            return !expire && !isExpired();
-        }
-
-        @ManyToOne
-        @JoinColumn(name = "user_id", nullable = false)
-        private Users users;
-
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users users;
 }

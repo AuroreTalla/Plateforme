@@ -56,56 +56,50 @@ public class ReponseService {
      * Passe la publication à RESOLUE.
      */
     @Transactional
-    public ReponseDTO validerSolution(Long reponseId, Users admin) {
+public ReponseDTO validerSolution(Long reponseId, Users admin) {
+    if (admin.getStatut() != TypeRoleUser.ADMIN && admin.getStatut() != TypeRoleUser.PROFESSEUR) {
+        throw new SecurityException("Seul un admin ou professeur peut valider une solution.");
+    }
 
-        if (admin.getStatut() != TypeRoleUser.ADMIN && admin.getStatut() != TypeRoleUser.PROFESSEUR) {
-            throw new SecurityException("Seul un admin ou professeur peut valider une solution.");
-        }
+    Reponse reponse = reponseRepository.findById(reponseId)
+            .orElseThrow(() -> new RuntimeException("Réponse introuvable : " + reponseId));
 
-        Reponse reponse = reponseRepository.findById(reponseId)
-                .orElseThrow(() -> new RuntimeException("Réponse introuvable : " + reponseId));
+    reponse.setValideeParUserId(admin.getId());
+    reponse.setDateValidation(LocalDateTime.now());
+    Reponse saved = reponseRepository.save(reponse);
 
-        reponse.setValideeParAdmin(true);
-        reponse.setValideeParUserId(admin.getId());
-        reponse.setDateValidation(LocalDateTime.now());
-        Reponse saved = reponseRepository.save(reponse);
+    Publication publication = reponse.getPublication();
+    publication.setStatut("RESOLUE");
+    publicationRepository.save(publication);
 
-        Publication publication = reponse.getPublication();
-        publication.setStatut("RESOLUE");
+    return ReponseDTO.fromEntity(saved);
+}
+
+@Transactional
+public ReponseDTO devaliderSolution(Long reponseId, Users admin) {
+    if (admin.getStatut() != TypeRoleUser.ADMIN && admin.getStatut() != TypeRoleUser.PROFESSEUR) {
+        throw new SecurityException("Seul un admin ou professeur peut dévalider une solution.");
+    }
+
+    Reponse reponse = reponseRepository.findById(reponseId)
+            .orElseThrow(() -> new RuntimeException("Réponse introuvable : " + reponseId));
+
+    reponse.setValideeParUserId(null);
+    reponse.setDateValidation(null);
+    Reponse saved = reponseRepository.save(reponse);
+
+    Publication publication = reponse.getPublication();
+    boolean autresValidees = reponseRepository
+            .findByPublicationId(publication.getId())
+            .stream()
+            .anyMatch(Reponse::isValidee);  // remplace Reponse::isValideeParAdmin
+
+    if (!autresValidees) {
+        publication.setStatut("NON_RESOLUE");
         publicationRepository.save(publication);
-
-        return ReponseDTO.fromEntity(saved);
     }
 
-    /**
-     * L'admin retire la validation. Si plus aucune réponse validée
-     * ne subsiste pour cette publication, elle repasse NON_RESOLUE.
-     */
-    @Transactional
-    public ReponseDTO devaliderSolution(Long reponseId, Users admin) {
-        if (admin.getStatut() != TypeRoleUser.ADMIN && admin.getStatut() != TypeRoleUser.PROFESSEUR) {
-            throw new SecurityException("Seul un admin ou professeur peut dévalider une solution.");
-        }
+    return ReponseDTO.fromEntity(saved);
+}
 
-        Reponse reponse = reponseRepository.findById(reponseId)
-                .orElseThrow(() -> new RuntimeException("Réponse introuvable : " + reponseId));
-
-        reponse.setValideeParAdmin(false);
-        reponse.setValideeParUserId(null);
-        reponse.setDateValidation(null);
-        Reponse saved = reponseRepository.save(reponse);
-
-        Publication publication = reponse.getPublication();
-        boolean autresValidees = reponseRepository
-                .findByPublicationId(publication.getId())
-                .stream()
-                .anyMatch(Reponse::isValideeParAdmin);
-
-        if (!autresValidees) {
-            publication.setStatut("NON_RESOLUE");
-            publicationRepository.save(publication);
-        }
-
-        return ReponseDTO.fromEntity(saved);
-    }
 }

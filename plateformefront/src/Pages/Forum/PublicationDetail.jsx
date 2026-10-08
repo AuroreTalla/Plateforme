@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Box, Paper, Typography, Chip, IconButton, Button, CircularProgress, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { getReponsesByPublication, proposerSolution, validerSolution, devaliderSolution } from '../../ConfigBackEnd/PublicationService';
-import { subscribeToReponses, sendReponse } from '../../ConfigBackEnd/WebSocketConfig';
-import { formatDate } from '../../ConfigBackEnd/FormatDate';
+import { getReponsesByPublication, proposerSolution, validerSolution, devaliderSolution } from '../../Services/PublicationService';
+import { subscribeToReponses, sendReponse } from '../../Services/WebSocketConfig';
+import { formatDate } from '../../Services/FormatDate';
+import { useRole } from '../../hooks/useRole';
 
 import ReponseForm from './ReponseForm';
 
@@ -14,8 +15,8 @@ function PublicationDetail({ publication, onBack, currentUser }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [statut, setStatut] = useState(publication.statut);
 
-  const isAuteur = currentUser?.id === publication.user?.id;
-  const isAdmin = currentUser?.statut === 'ADMIN' || currentUser?.statut === 'PROFESSEUR';
+  const { isProfOuAdmin: isAdmin } = useRole();
+const isAuteur = currentUser?.id === publication.user?.id;
 
   useEffect(() => {
     let mounted = true;

@@ -3,12 +3,12 @@ import { Box, Card, CardContent, CardActionArea, Typography, Avatar, CircularPro
 import {
     Button, IconButton} from '@mui/material';
 import { Search as SearchIcon, Group as GroupIcon, Chat as ChatIcon } from '@mui/icons-material';
-import { getAllGroupes } from '../../ConfigBackEnd/GroupService';
+import { getAllGroupes } from '../../Services/GroupService.js';
 import PublicationList from '../../Pages/Forum/PublicationList';
-import { connectWebSocket, disconnectWebSocket } from '../../ConfigBackEnd/WebSocketConfig';
+import { connectWebSocket, disconnectWebSocket } from '../../Services/WebSocketConfig.js';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { supprimerMatiere } from '../../ConfigBackEnd/MatiereService';
+import { supprimerMatiere } from '../../Services/MatiereService.js';
 import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 
 export default function ForumsAdmin() {

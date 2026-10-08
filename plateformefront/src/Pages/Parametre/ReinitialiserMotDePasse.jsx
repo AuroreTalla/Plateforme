@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
-import { reinitialiserMotDePasse } from '../../ConfigBackEnd/UserService';
+import { reinitialiserMotDePasse } from '../../Services/UserService';
 
 function ReinitialiserMotDePasse() {
   const navigate = useNavigate();

@@ -21,17 +21,17 @@ function LandingPage() {
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            
+
             {/* Partie gauche - Texte */}
             <div className="flex-1 space-y-8">
-              
+
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                 Commencez à apprendre{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
                   chez vous
                 </span>
               </h1>
-              
+
               <p className="text-xl text-gray-600 leading-relaxed max-w-xl">
                 Accédez à des cours en ligne, suivez vos progrès et atteignez vos objectifs éducatifs.
               </p>
@@ -40,7 +40,7 @@ function LandingPage() {
             {/* Partie droite - Illustration */}
             <div className="flex-1 relative">
               <div className="relative w-full max-w-lg mx-auto">
-                
+
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ function LandingPage() {
                 Une équipe disponible pour répondre à toutes vos questions.
               </p>
             </div>
-            
+
           </div>
         </div>
       </section>
@@ -150,16 +150,16 @@ function LandingPage() {
       <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8 bottom-0 w-full">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col justify-center items-center">
-              <div className="flex items-center space-x-4 mb-4">
-                <SchoolIcon style={{ fontSize: 32 }} />
-                <span className="text-xl font-bold">Plateforme</span>
-              </div>
-              <p className="text-gray-400 text-sm">
-                La plateforme pour l'apprentissage et la preparation des concours en ligne.
-              </p>
-          
+            <div className="flex items-center space-x-4 mb-4">
+              <SchoolIcon style={{ fontSize: 32 }} />
+              <span className="text-xl font-bold">Plateforme</span>
+            </div>
+            <p className="text-gray-400 text-sm">
+              La plateforme pour l'apprentissage et la preparation des concours en ligne.
+            </p>
+
           </div>
-          
+
         </div>
       </footer>
     </div>

@@ -93,7 +93,7 @@ export const SideBarItems = {
       id: "demandes",
       icon: AddIcon,
       text: "Mes Demandes",
-      path: "/dashboard/demandes",
+      path: "/dashboard/mes-demandes",
     },
     {
       id: "parametre",

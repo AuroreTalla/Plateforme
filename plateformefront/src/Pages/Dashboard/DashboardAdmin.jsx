@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { getAllUsers } from '../../ConfigBackEnd/UserService';
-import { getDemandesProfesseur } from '../../ConfigBackEnd/ProfService';
+import { getAllUsers } from '../../Services/UserService';
+import { getDemandesProfesseur } from '../../Services/ProfService';
 import DashboardProfesseur from './DashboardProfesseur';
 
 export default function DashboardAdmin({ currentUser }) {

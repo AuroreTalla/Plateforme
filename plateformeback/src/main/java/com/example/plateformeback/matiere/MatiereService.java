@@ -5,12 +5,15 @@ import com.example.plateformeback.exercice.*;
 import com.example.plateformeback.enums.TypeContenu;
 import com.example.plateformeback.groupe.Groupe;
 import com.example.plateformeback.groupe.GroupeRepository;
+import com.example.plateformeback.publication.PublicationRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Map;
 
 @AllArgsConstructor
 @Slf4j
@@ -21,13 +24,21 @@ public class MatiereService {
     private final GroupeRepository groupeRepository;
     private final CoursRepository coursRepository;
     private final ExerciceRepository exerciceRepository;
+    private final PublicationRepository publicationRepository;
 
-    public List<MatiereDTO> getAllMatieres() {
+    @Transactional(readOnly = true)
+public List<MatiereDTO> getAllMatieres() {
+    Map<Long, Long> coursParMatiere = coursRepository.countGroupedByMatiere().stream()
+            .collect(Collectors.toMap(MatiereCount::getMatiereId, MatiereCount::getTotal));
+
+    Map<Long, Long> exosParMatiere = exerciceRepository.countGroupedByMatiere().stream()
+            .collect(Collectors.toMap(MatiereCount::getMatiereId, MatiereCount::getTotal));
+
     return matiereRepository.findAll().stream()
             .map(m -> MatiereDTO.fromEntity(
                     m,
-                    coursRepository.countByMatiereId(m.getId()),
-                    exerciceRepository.countByMatiereId(m.getId())
+                    coursParMatiere.getOrDefault(m.getId(), 0L),
+                    exosParMatiere.getOrDefault(m.getId(), 0L)
             ))
             .toList();
 }
@@ -68,19 +79,24 @@ public MatiereDTO getById(Long id) {
     }
 
     @Transactional
-    public void supprimerMatiere(Long matiereId) {
+public void supprimerMatiere(Long matiereId) {
     Matiere matiere = findEntity(matiereId);
     Long groupeId = matiere.getGroupe().getId();
 
-    // 1. Supprime la matière — cascade automatique sur cours/exercice
-    matiereRepository.delete(matiere);
+    long nbPublications = publicationRepository.countByGroupeId(groupeId);
+    if (nbPublications > 0) {
+        throw new IllegalStateException(
+            "Impossible de supprimer cette matière : " + nbPublications +
+            " publication(s) existent encore dans son forum. " +
+            "La suppression d'une matière avec un historique actif n'est pas autorisée."
+        );
+    }
 
-    // 2. Le groupe n'est plus référencé, on peut le supprimer à son tour
+    matiereRepository.delete(matiere);
     groupeRepository.deleteById(groupeId);
 
     log.info("Matière {} et son groupe {} supprimés", matiereId, groupeId);
 }
-
     // ---- Cours ----
 
     public List<CoursDTO> getCoursByMatiere(Long matiereId) {

@@ -14,7 +14,7 @@ import {
     Description as DescIcon
 } from '@mui/icons-material';
 
-import { creerMatiere } from '../../../ConfigBackEnd/MatiereService';
+import { creerMatiere } from '../../../Services/MatiereService';
 
 
 

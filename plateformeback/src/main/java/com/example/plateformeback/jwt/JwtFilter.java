@@ -63,7 +63,7 @@ public class JwtFilter extends OncePerRequestFilter {
             Users user = usersService.getUserByEmail(email);
 
             String hashedToken = sha256Hex(token);
-            Optional<Jwt> jwtOpt = jwtRepository.findByValeurAndDesactiveAndExpire(hashedToken, false, false);
+            Optional<Jwt> jwtOpt = jwtRepository.findByValeurAndDesactive(hashedToken, false);
 
             if (jwtOpt.isEmpty()) {
                 log.warn("❌ Token révoqué ou invalide pour {}", email);

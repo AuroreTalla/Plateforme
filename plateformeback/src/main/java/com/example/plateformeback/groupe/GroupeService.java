@@ -1,14 +1,9 @@
 package com.example.plateformeback.groupe;
 
-import com.example.plateformeback.message.Message;
-import com.example.plateformeback.message.MessageDTO;
-import com.example.plateformeback.message.MessageRepository;
-import com.example.plateformeback.user.Users;
 import jakarta.persistence.EntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +16,6 @@ import java.util.List;
 public class GroupeService {
 
     private final GroupeRepository groupeRepository;
-    private final MessageRepository messageRepository;
     private final EntityManager entityManager;
 
     public Groupe creerGroupe(Groupe groupe) {
@@ -49,37 +43,18 @@ public class GroupeService {
     // Méthode joinGroupe supprimée pour ne plus gérer l’adhésion
     // La logique est retirée pour éviter tout blocage
 
-    public List<GroupeDTO> getAllGroupesDTO(Users currentUser) {
-        List<Groupe> groupes = groupeRepository.findAll();
-        return groupes.stream()
-                .map(g -> GroupeDTO.fromEntity(g, currentUser))
-                .toList();
-    }
+    public List<GroupeDTO> getAllGroupesDTO() {
+    return groupeRepository.findAll().stream()
+            .map(GroupeDTO::fromEntity)
+            .toList();
+}
 
-    public GroupeDTO findByIdDTO(Long id, Users currentUser) {
-        return groupeRepository.findById(id)
-                .map(g -> GroupeDTO.fromEntity(g, currentUser))
-                .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
-    }
+public GroupeDTO findByIdDTO(Long id) {
+    return groupeRepository.findById(id)
+            .map(GroupeDTO::fromEntity)
+            .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
+}
 
-    public List<MessageDTO> getMessagesDTO(Long id, Pageable pageable) {
-        return groupeRepository.findMessagesByGroupeId(id, pageable).stream()
-                .map(MessageDTO::fromEntity)
-                .toList();
-    }
-
-    public MessageDTO getLastMessageDTO(Long id) {
-        Groupe groupe = groupeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Groupe non trouvé"));
-
-        Message last = messageRepository.findTop1ByGroupeOrderByDateEnvoieDesc(groupe);
-
-        if (last == null) {
-            return null;
-        }
-
-        return MessageDTO.fromEntity(last);
-    }
 
     public Groupe findById(Long id) {
         log.info("🔎 Recherche du groupe : '{}'", id);

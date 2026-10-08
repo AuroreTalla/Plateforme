@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Box, Typography, Paper, Grid, TextField, Button, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress } from '@mui/material';
 import { Lock as LockIcon, Save as SaveIcon } from '@mui/icons-material';
 import { AuthContext } from '../../Composants/Authentification/AuthContext';
-import { modifierProfil, changerMotDePasse } from '../../ConfigBackEnd/UserService';
+import { modifierProfil, changerMotDePasse } from '../../Services/UserService';
 
 export default function Parametre() {
     const { currentUser, setCurrentUser } = useContext(AuthContext);

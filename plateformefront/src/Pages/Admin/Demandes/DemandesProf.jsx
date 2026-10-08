@@ -9,8 +9,8 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { getDemandesProfesseur, getHistoriqueProfesseur, validerProfesseur,
-     refuserProfesseur, revoquerProfesseur } from '../../../ConfigBackEnd/ProfService';
-import { formatDate } from '../../../ConfigBackEnd/FormatDate';
+     refuserProfesseur, revoquerProfesseur } from '../../../Services/ProfService';
+import { formatDate } from '../../../Services/FormatDate';
 
 const statutConfig = {
     EN_ATTENTE: { label: 'En attente', color: '#92400e', bg: '#fef3c7' },
@@ -127,6 +127,7 @@ export function DemandesProf() {
                             <TableRow>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Candidat</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Statut</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Date de demande</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>
                                     {tab === 'en-attente' ? "Date d'inscription" : 'Date de décision'}
                                 </TableCell>
@@ -163,6 +164,9 @@ export function DemandesProf() {
                                                 {tab === 'en-attente'
                                                     ? formatDate(d.user?.dateInscription)
                                                     : formatDate(d.dateValidation)}
+                                            </TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold' }}>
+                                                {formatDate(d.dateDemande)}
                                             </TableCell>
                                             <TableCell align="right">
     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>

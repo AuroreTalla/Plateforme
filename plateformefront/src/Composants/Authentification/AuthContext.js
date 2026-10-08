@@ -8,3 +8,4 @@ export const AuthContext = createContext({
   login: async () => {},  // ✅ Ajouté
   logout: () => {},
 });
+

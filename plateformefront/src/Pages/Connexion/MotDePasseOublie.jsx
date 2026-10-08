@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
-import { demanderReinitialisation } from '../../ConfigBackEnd/UserService';
+import { demanderReinitialisation } from '../../Services/UserService';
 
 function MotDePasseOublie() {
   const navigate = useNavigate();

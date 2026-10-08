@@ -13,12 +13,17 @@ public record PublicationDTO(
         String statut
 ) {
     public static PublicationDTO fromEntity(Publication publication) {
+
+        UserDTO user = publication.getSender() != null
+            ? UserDTO.fromEntity(publication.getSender())
+            : null;
+            
         return new PublicationDTO(
                 publication.getId(),
                 publication.getTitre(),
                 publication.getContent(),
                 publication.getDatePublication().format(FORMATTER),
-                UserDTO.fromEntity(publication.getSender()),
+                user,
                 publication.getGroupe().getId(),
                 publication.getStatut()
         );

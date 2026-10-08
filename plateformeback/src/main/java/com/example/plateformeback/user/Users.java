@@ -2,8 +2,6 @@ package com.example.plateformeback.user;
 
 import com.example.plateformeback.enums.TypeRoleUser;
 import com.example.plateformeback.groupe.Groupe;
-import com.example.plateformeback.message.Message;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -51,9 +49,7 @@ public class Users implements UserDetails {
 
     private LocalDateTime lastSeen;
 
-    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Message> sentMessages = new ArrayList<>();
+    
 
     @PrePersist
     public void prePersist() {
