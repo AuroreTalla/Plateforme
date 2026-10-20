@@ -3,6 +3,8 @@ import { Box, Typography, Paper, Grid, TextField, Button, Avatar, Dialog, Dialog
 import { Lock as LockIcon, Save as SaveIcon } from '@mui/icons-material';
 import { AuthContext } from '../../Composants/Authentification/AuthContext';
 import { modifierProfil, changerMotDePasse } from '../../Services/UserService';
+import { modifierPreferences } from '../../Services/UserService';
+import { FormControlLabel, Switch } from '@mui/material';
 
 export default function Parametre() {
     const { currentUser, setCurrentUser } = useContext(AuthContext);
@@ -140,6 +142,15 @@ export default function Parametre() {
                     </Paper>
                 </Grid>
             </Grid>
+
+            <FormControlLabel
+  control={<Switch checked={currentUser.recommandationsActives}
+    onChange={async (e) => {
+      const res = await modifierPreferences(e.target.checked);
+      setCurrentUser(res.data);
+    }} />}
+  label="Recevoir des recommandations de ressources"
+/>
 
             <Dialog open={pwdDialogOpen} onClose={() => setPwdDialogOpen(false)} fullWidth maxWidth="xs">
                 <DialogTitle>Changer de mot de passe</DialogTitle>

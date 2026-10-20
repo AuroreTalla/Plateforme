@@ -3,24 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ForumIcon from '@mui/icons-material/Forum';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';    
 import { getAllUsers } from '../../Services/UserService';
 import { getDemandesProfesseur } from '../../Services/ProfService';
 import DashboardProfesseur from './DashboardProfesseur';
+import { getStats } from '../../Services/StatsService.js';
+
 
 export default function DashboardAdmin({ currentUser }) {
   const navigate = useNavigate();
   const [nbUsers, setNbUsers] = useState(null);
   const [nbDemandes, setNbDemandes] = useState(null);
 
-  useEffect(() => {
-    getAllUsers().then((res) => setNbUsers(res.data.length)).catch(() => setNbUsers(0));
-    getDemandesProfesseur().then((res) => setNbDemandes(res.data.total)).catch(() => setNbDemandes(0));
-  }, []);
+  const [stats, setStats] = useState(null);
 
-  const adminStats = [
-    { label: 'Utilisateurs', value: nbUsers, icon: PeopleIcon, color: '#2563eb', path: '/dashboard/users' },
-    { label: 'Demandes professeur', value: nbDemandes, icon: PersonAddIcon, color: '#d97706', path: '/dashboard/demandes/prof' },
-  ];
+useEffect(() => {
+  getStats().then((res) => setStats(res.data)).catch(() => setStats({}));
+}, []);
+
+const adminStats = [
+  { label: 'Utilisateurs', value: stats?.utilisateurs, icon: PeopleIcon, color: '#2563eb', path: '/dashboard/users' },
+  { label: 'Cours', value: stats?.cours, icon: MenuBookIcon, color: '#059669', path: '/dashboard/matieres/list' },
+  { label: 'Exercices', value: stats?.exercices, icon: DescriptionIcon, color: '#d97706', path: '/dashboard/matieres/list' },
+  { label: 'Publications', value: stats?.publications, icon: ForumIcon, color: '#7c3aed', path: '/dashboard/forums' },
+  { label: 'Taux de résolution', value: stats ? `${stats.tauxResolution} %` : undefined, icon: CheckCircleIcon, color: '#16a34a', path: '/dashboard/forums' },
+];
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto' }}>

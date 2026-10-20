@@ -24,6 +24,8 @@ import {
 import AjoutContenuForm from './AjoutContenuForm';
 import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 import { useRole } from '../../hooks/useRole';
+import { useTrackConsultation } from '../../hooks/useTrackConsultation';
+import Recommandations from './Recommandations';
 
 
 const typeIcons = {
@@ -43,6 +45,10 @@ function MatierePage({ defaultTab = 'cours' }) {
   const [matiere, setMatiere] = useState(null);
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
+  useTrackConsultation(
+  selected ? (active === 'cours' ? 'COURS' : 'EXERCICE') : null,
+  selected?.id
+);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -236,6 +242,10 @@ function MatierePage({ defaultTab = 'cours' }) {
                     Télécharger le document
                   </Button>
                 )}
+                <Recommandations
+  type={active === 'cours' ? 'COURS' : 'EXERCICE'}
+  id={selected.id}
+/>
               </>
             ) : (
               <Typography color="text.secondary">Sélectionnez un élément.</Typography>
@@ -246,5 +256,4 @@ function MatierePage({ defaultTab = 'cours' }) {
     </Box>
   );
 }
-
 export default MatierePage;

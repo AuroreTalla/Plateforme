@@ -193,6 +193,14 @@ public List<UserDTO> getAllUsers() {
         }
     }
 
+    @PatchMapping("/me/preferences")
+public ResponseEntity<?> preferences(@RequestBody Map<String, Boolean> payload, Authentication auth) {
+    Users u = (Users) auth.getPrincipal();
+    Users saved = usersService.modifierPreferenceRecommandations(
+            u, Boolean.TRUE.equals(payload.get("recommandationsActives")));
+    return ResponseEntity.ok(UserDTO.fromEntity(saved));
+}
+
     @PatchMapping("/password")
 public ResponseEntity<?> changerMotDePasse(@RequestBody Map<String, String> payload, Authentication auth) {
     try {

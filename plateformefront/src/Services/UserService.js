@@ -36,3 +36,8 @@ export const demanderReinitialisation = (email) =>
 
 export const reinitialiserMotDePasse = (code, nouveauMotDePasse) =>
   api.post("/users/reinitialiser-mot-de-passe", { code, nouveauMotDePasse });
+
+export const modifierPreferences = (recommandationsActives) =>
+  api.patch("/users/me/preferences", { recommandationsActives });
+export const getRecommandations = (type, id) =>
+  api.get("/recommandations", { params: { type, id } });
