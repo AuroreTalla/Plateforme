@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Box, Button, CircularProgress, Typography, Paper, IconButton, TextField, InputAdornment, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -19,14 +19,12 @@ import {
   ajouterExercice,
   supprimerCours,
   supprimerExercice,
-  buildMediaUrl,
 } from '../../Services/MatiereService.js';
 import AjoutContenuForm from './AjoutContenuForm';
 import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 import { useRole } from '../../hooks/useRole';
 import { useTrackConsultation } from '../../hooks/useTrackConsultation';
-import Recommandations from './Recommandations';
-
+import RessourceViewer from './RessourceViewer';
 
 const typeIcons = {
   TEXTE: ArticleIcon,
@@ -35,6 +33,11 @@ const typeIcons = {
   AUDIO: AudiotrackIcon,
   PDF: PictureAsPdfIcon,
   DOCUMENT: DescriptionIcon,
+};
+
+const typeLabels = {
+  TEXTE: 'Texte', IMAGE: 'Image', VIDEO: 'Vidéo',
+  AUDIO: 'Audio', PDF: 'PDF', DOCUMENT: 'Document',
 };
 
 function MatierePage({ defaultTab = 'cours' }) {
@@ -54,6 +57,11 @@ function MatierePage({ defaultTab = 'cours' }) {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
 
+// dans le composant, après useParams :
+const [searchParams, setSearchParams] = useSearchParams();
+const itemParam = searchParams.get('item');
+const [itemsTab, setItemsTab] = useState(null);
+
   const load = useCallback(async () => {
     try {
       setLoading(true);
@@ -63,8 +71,9 @@ function MatierePage({ defaultTab = 'cours' }) {
         active === 'cours' ? getCoursByMatiere(matiereId) : getExercicesByMatiere(matiereId)
       ]);
       setMatiere(matiereRes.data);
-      setItems(itemsRes.data);
-      setSelected(itemsRes.data[0] || null);
+      setItemsTab(active);
+      setItems(itemsRes.data);      // ← cette ligne manquait
+      setSelected(null);
     } catch (e) {
       console.error('❌ Erreur chargement matière :', e);
       setError(e.response?.status === 404 ? "Cette matière n'existe plus." : "Erreur lors du chargement.");
@@ -76,6 +85,16 @@ function MatierePage({ defaultTab = 'cours' }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+  if (!itemParam || itemsTab !== active) return;
+
+  const cible = items.find((i) => String(i.id) === itemParam);
+  if (cible) setSelected(cible);
+
+  // retire le paramètre pour que fermer le dialogue ne le rouvre pas
+  setSearchParams({}, { replace: true });
+}, [itemParam, items, itemsTab, active, setSearchParams]);
 
   const { refetch: refetchMatieres } = useMatieres();
 
@@ -134,125 +153,85 @@ function MatierePage({ defaultTab = 'cours' }) {
         )}
       </Box>
 
-      {showForm && (
-        <AjoutContenuForm
-          onSubmit={handleAjout}
-          onCancel={() => setShowForm(false)}
-        />
-      )}
+      <AjoutContenuForm
+        open={showForm}
+        onSubmit={handleAjout}
+        onCancel={() => setShowForm(false)}
+      />
 
       {items.length === 0 ? (
-        <Typography color="text.secondary">Aucun contenu pour l'instant.</Typography>
-      ) : (
-        <Box sx={{ display: 'flex', gap: 3 }}>
-          <Box sx={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Rechercher..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
-                  </InputAdornment>
-                )
-              }}
-            />
+  <Typography color="text.secondary">Aucun contenu pour l'instant.</Typography>
+) : (
+  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: 900 }}>
+    <TextField
+      fullWidth
+      size="small"
+      placeholder="Rechercher..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+          </InputAdornment>
+        )
+      }}
+    />
 
-            {filteredItems.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ px: 1 }}>
-                Aucun résultat.
-              </Typography>
-            ) : (
-              filteredItems.map((item) => {
-                const Icon = typeIcons[item.type] || ArticleIcon;
-                const isSelected = selected?.id === item.id;
-                return (
-                  <Paper
-                    key={item.id}
-                    elevation={isSelected ? 3 : 0}
-                    onClick={() => setSelected(item)}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: isSelected ? '#7c3aed' : '#e2e8f0',
-                      bgcolor: isSelected ? '#f5f3ff' : 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      transition: 'all 0.15s',
-                      '&:hover': { borderColor: '#7c3aed' }
-                    }}
-                  >
-                    <Icon sx={{ color: isSelected ? '#7c3aed' : '#94a3b8', fontSize: 20 }} />
-                    <Typography
-                      variant="body2"
-                      fontWeight={isSelected ? 600 : 400}
-                      sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                    >
-                      {item.titre}
-                    </Typography>
-                    {peutModifier && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSupprimer(item.id);
-                        }}
-                        sx={{ color: '#ef4444', p: 0.5 }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Paper>
-                );
-              })
-            )}
-          </Box>
-
-          <Paper elevation={1} sx={{ flex: 1, p: 3, borderRadius: 3, minHeight: 400 }}>
-            {selected ? (
-              <>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <Typography variant="h6" fontWeight="600">{selected.titre}</Typography>
-                  <Chip label={selected.type} size="small" sx={{ bgcolor: '#f1f5f9', fontWeight: 600 }} />
+    {filteredItems.length === 0 ? (
+      <Typography variant="body2" color="text.secondary" sx={{ px: 1 }}>
+        Aucun résultat.
+      </Typography>
+        ) : (
+          filteredItems.map((item) => {
+            const Icon = typeIcons[item.type] || ArticleIcon;
+            return (
+              <Paper
+                key={item.id}
+                elevation={0}
+                sx={{
+                  p: 1.5, borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: 'white',
+                  display: 'flex', alignItems: 'center', gap: 1.5, transition: 'all 0.15s',
+                  '&:hover': { borderColor: '#c4b5fd' },
+                }}
+              >
+                <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: '#f5f3ff', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon sx={{ color: '#7c3aed', fontSize: 22 }} />
                 </Box>
 
-                {selected.type === 'TEXTE' && (
-                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>{selected.contenu}</Typography>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={600} noWrap>{item.titre}</Typography>
+                  <Typography variant="caption" color="text.secondary">{typeLabels[item.type]}</Typography>
+                </Box>
+
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setSelected(item)}
+                  sx={{ textTransform: 'none', borderRadius: 2, flexShrink: 0,
+                    color: '#7c3aed', borderColor: '#c4b5fd' }}
+                >
+                  Consulter
+                </Button>
+
+                {peutModifier && (
+                  <IconButton size="small" onClick={() => handleSupprimer(item.id)} sx={{ color: '#ef4444', p: 0.5 }}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
                 )}
-                {selected.type === 'IMAGE' && (
-                  <Box component="img" src={buildMediaUrl(selected.mediaUrl)} sx={{ maxWidth: '100%', borderRadius: 2 }} />
-                )}
-                {selected.type === 'VIDEO' && (
-                  <Box component="video" src={buildMediaUrl(selected.mediaUrl)} controls sx={{ maxWidth: '100%', borderRadius: 2 }} />
-                )}
-                {selected.type === 'AUDIO' && (
-                  <Box component="audio" src={buildMediaUrl(selected.mediaUrl)} controls sx={{ width: '100%' }} />
-                )}
-                {selected.type === 'PDF' && (
-                  <Box component="iframe" src={buildMediaUrl(selected.mediaUrl)} sx={{ width: '100%', height: 600, border: 'none', borderRadius: 2 }} />
-                )}
-                {selected.type === 'DOCUMENT' && (
-                  <Button href={buildMediaUrl(selected.mediaUrl)} target="_blank" variant="outlined">
-                    Télécharger le document
-                  </Button>
-                )}
-                <Recommandations
-  type={active === 'cours' ? 'COURS' : 'EXERCICE'}
-  id={selected.id}
-/>
-              </>
-            ) : (
-              <Typography color="text.secondary">Sélectionnez un élément.</Typography>
-            )}
-          </Paper>
-        </Box>
-      )}
+              </Paper>
+            );
+          })
+        )}
+      </Box>
+    )}
+
+    <RessourceViewer
+      ressource={selected}
+      typeRessource={active === 'cours' ? 'COURS' : 'EXERCICE'}
+      onClose={() => setSelected(null)}
+    />
     </Box>
   );
 }

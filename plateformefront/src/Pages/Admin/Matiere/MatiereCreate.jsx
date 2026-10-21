@@ -1,132 +1,64 @@
-import React from 'react';
-import {
-    Box, Typography, Paper, Grid, TextField, Button, Avatar,
-    Card, CardContent, CardActionArea, IconButton, Chip,
-    Alert, CircularProgress, Fade, InputAdornment
-} from '@mui/material';
-import {
-    MenuBook as BookIcon,
-    Add as AddIcon,
-    Search as SearchIcon,
-    MoreVert as MoreIcon,
-    People as PeopleIcon,
-    Assignment as TaskIcon,
-    Description as DescIcon
-} from '@mui/icons-material';
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, Paper, TextField, Button, Alert, CircularProgress, Typography } from '@mui/material';
 import { creerMatiere } from '../../../Services/MatiereService';
-
-
+import { useMatieres } from '../../../Composants/Matiere/MatiereProvider.jsx';
+import PageHeader from '../../../Composants/UI/PageHeader';
 
 export default function MatiereCreate() {
-    const [nom, setNom] = React.useState('');
-    const [description, setDescription] = React.useState('');
-    const [loading, setLoading] = React.useState(false);
-    const [success, setSuccess] = React.useState(false);
-    const [error, setError] = React.useState('');
+  const navigate = useNavigate();
+  const { refetch } = useMatieres();
+  const [nom, setNom] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-    const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
-  setSuccess(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await creerMatiere(nom.trim(), description.trim());
+      await refetch();                       // met à jour sidebar et dashboards
+      navigate('/dashboard/matieres/list');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Une erreur est survenue.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  try {
-    await creerMatiere(nom, description);
-    setSuccess(true);
-    setNom('');
-    setDescription('');
-  } catch (err) {
-    console.error(err);
-    setError(err.response?.data?.message || "Une erreur est survenue.");
-  } finally {
-    setLoading(false);
-  }
-};
+  return (
+    <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+      <PageHeader titre="Nouvelle matière"
+        sous="La création génère aussi le forum de discussion associé." />
 
+      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-    return (
-        <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8fafc', minHeight: '100vh', display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ maxWidth: 700, width: '100%' }}>
-                <Typography variant="h4" fontWeight="bold" sx={{ color: '#4c1d95', mb: 4, textAlign: 'center' }}>
-                    Nouvelle Matière
-                </Typography>
+        <form onSubmit={handleSubmit}>
+          <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>Nom de la matière</Typography>
+          <TextField fullWidth required value={nom} onChange={(e) => setNom(e.target.value)}
+            placeholder="Ex : Intelligence artificielle" sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
 
-                <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: 'white' }}>
-                    {success && (
-                        <Alert severity="success" sx={{ mb: 4, borderRadius: 3 }}>
-                            La matière et son groupe de discussion ont été créés avec succès !
-                        </Alert>
-                    )}
+          <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>Description</Typography>
+          <TextField fullWidth multiline rows={5} value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Décrivez les objectifs pédagogiques..."
+            sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
 
-                    {error && (
-                        <Alert severity="error" sx={{ mb: 4, borderRadius: 3 }}>
-                            {error}
-                        </Alert>
-                    )}
-
-                    <form onSubmit={handleSubmit}>
-                        <Grid container spacing={3}>
-                            <Grid size={{ xs: 12 }}>
-                                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>Nom de la matière</Typography>
-                                <TextField
-                                    fullWidth
-                                    value={nom}
-                                    onChange={(e) => setNom(e.target.value)}
-                                    placeholder="Ex: Intelligence Artificielle"
-                                    required
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start"><BookIcon sx={{ color: '#94a3b8' }} /></InputAdornment>
-                                    }}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                />
-                            </Grid>
-
-                            <Grid size={{ xs: 12 }}>
-                                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>Description détaillée</Typography>
-                                <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={6}
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Décrivez les objectifs pédagogiques..."
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}><DescIcon sx={{ color: '#94a3b8' }} /></InputAdornment>
-                                    }}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                                />
-                            </Grid>
-
-                            <Grid size={{ xs: 12 }} sx={{ mt: 2 }}>
-                                <Button
-                                    fullWidth
-                                    type="submit"
-                                    variant="contained"
-                                    disabled={loading}
-                                    sx={{
-                                        bgcolor: '#7c3aed',
-                                        borderRadius: 3,
-                                        py: 1.8,
-                                        fontSize: '1rem',
-                                        fontWeight: 'bold',
-                                        textTransform: 'none',
-                                        '&:hover': { bgcolor: '#6d28d9', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }
-                                    }}
-                                >
-                                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Créer la matière et son forum'}
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </form>
-                </Paper>
-
-                <Box sx={{ mt: 4, textAlign: 'center' }}>
-                    <Typography variant="body2" color="#64748b">
-                        Note: La création d'une matière génère automatiquement <br /> un groupe de discussion privé associé.
-                    </Typography>
-                </Box>
-            </Box>
-        </Box>
-    );
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button type="submit" variant="contained" disabled={loading || !nom.trim()}
+              sx={{ textTransform: 'none', borderRadius: 999, px: 4, py: 1.2, bgcolor: '#7c3aed', '&:hover': { bgcolor: '#6d28d9' } }}>
+              {loading ? <CircularProgress size={22} color="inherit" /> : 'Créer la matière'}
+            </Button>
+            <Button onClick={() => navigate('/dashboard/matieres/list')} disabled={loading}
+              sx={{ textTransform: 'none', borderRadius: 999, px: 4, bgcolor: '#ede9fe', color: '#7c3aed', '&:hover': { bgcolor: '#ddd6fe' } }}>
+              Annuler
+            </Button>
+          </Box>
+        </form>
+      </Paper>
+    </Box>
+  );
 }

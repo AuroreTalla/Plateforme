@@ -14,6 +14,11 @@ export default function Recommandations({ type, id }) {
   const { currentUser } = useContext(AuthContext);
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
+  function destination(r) {
+  if (r.type === 'COURS') return `/dashboard/matiere/${r.matiereId}/cours?item=${r.id}`;
+  if (r.type === 'EXERCICE') return `/dashboard/matiere/${r.matiereId}/exercices?item=${r.id}`;
+  return `/dashboard/forum/${r.groupeId}`;
+}
 
   useEffect(() => {
     if (!currentUser?.recommandationsActives || !id) {

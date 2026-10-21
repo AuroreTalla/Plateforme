@@ -1,139 +1,75 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Box, Typography, Paper, Grid, TextField, Button, Avatar,
-    Card, CardContent, CardActionArea, IconButton,
-    Fade, InputAdornment, CircularProgress
-} from '@mui/material';
-import {
-    MenuBook as BookIcon,
-    Add as AddIcon,
-    Search as SearchIcon,
-    MoreVert as MoreIcon,
-} from '@mui/icons-material';
+import { Box, Typography, Paper, Grid, TextField, Button, InputAdornment, CircularProgress } from '@mui/material';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { useMatieres } from '../../../Composants/Matiere/MatiereProvider.jsx';
-
-const couleurs = ['#7c3aed', '#2563eb', '#059669', '#dc2626', '#d97706'];
-const couleurPour = (id) => couleurs[id % couleurs.length];
+import PageHeader from '../../../Composants/UI/PageHeader';
 
 export default function MatiereList() {
-    const navigate = useNavigate();
-    const { matieres, loading } = useMatieres();
-    const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const { matieres, loading } = useMatieres();
+  const [search, setSearch] = useState('');
 
-    const filtered = matieres.filter(m =>
-        m.nom.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const filtered = matieres.filter((m) => m.nom.toLowerCase().includes(search.toLowerCase()));
 
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                <CircularProgress sx={{ color: '#8b5cf6' }} />
-            </Box>
-        );
-    }
+  if (loading) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress sx={{ color: '#8b5cf6' }} /></Box>;
+  }
 
-    return (
-        <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8fafc', minHeight: '100vh' }}>
-            <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                    <Typography variant="h4" fontWeight="bold" sx={{ color: '#4c1d95', mb: 1 }}>
-                        Gestion des Matières
-                    </Typography>
-                    <Typography color="#64748b">
-                        Créez et organisez les enseignements disponibles sur la plateforme.
-                    </Typography>
+  return (
+    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+      <PageHeader
+        titre="Gestion des matières"
+        sous="Créez et organisez les enseignements disponibles sur la plateforme."
+        action={
+          <Button variant="contained" startIcon={<AddIcon />}
+            onClick={() => navigate('/dashboard/matieres/create')}
+            sx={{ textTransform: 'none', borderRadius: 3, bgcolor: '#7c3aed', '&:hover': { bgcolor: '#6d28d9' } }}>
+            Nouvelle matière
+          </Button>
+        } />
+
+      <TextField fullWidth placeholder="Rechercher une matière..." value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#94a3b8' }} /></InputAdornment> }}
+        sx={{ mb: 3, bgcolor: 'white', '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+
+      {filtered.length === 0 ? (
+        <Typography color="text.secondary">Aucune matière trouvée.</Typography>
+      ) : (
+        <Grid container spacing={2}>
+          {filtered.map((m) => (
+            <Grid key={m.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+              <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid #e2e8f0', height: '100%',
+                display: 'flex', flexDirection: 'column', '&:hover': { borderColor: '#c4b5fd' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: 3, color: '#fff', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <MenuBookIcon />
+                  </Box>
+                  <Typography fontWeight="bold" sx={{ color: '#4c1d95' }}>{m.nom}</Typography>
                 </Box>
-                <IconButton
-                    onClick={() => navigate('/dashboard/matieres/create')}
-                    sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', color: '#64748b' }}
-                >
-                    <MoreIcon />
-                </IconButton>
-            </Box>
 
-            <TextField
-                fullWidth
-                placeholder="Rechercher une matière..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                    startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#94a3b8' }} /></InputAdornment>
-                }}
-                sx={{ mb: 4, bgcolor: 'white', '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-            />
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1, mb: 1.5,
+                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {m.description || 'Aucune description.'}
+                </Typography>
+                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ mb: 2 }}>
+                  {m.nbCours} cours · {m.nbExercices} exercices
+                </Typography>
 
-            <Grid container spacing={3}>
-                {filtered.map((matiere, index) => {
-                    const color = couleurPour(matiere.id);
-                    return (
-                        <Fade in={true} timeout={300 + index * 100} key={matiere.id}>
-                            <Grid item xs={12} sm={6} lg={4}>
-                                <Card elevation={0} sx={{
-                                    borderRadius: 4,
-                                    border: '1px solid #e2e8f0',
-                                    transition: 'all 0.3s',
-                                    '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 12px 30px -10px rgba(0,0,0,0.1)' }
-                                }}>
-                                    <CardContent>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                            <Avatar sx={{ bgcolor: `${color}15`, color, width: 56, height: 56, borderRadius: 3, mr: 2 }}>
-                                                <BookIcon fontSize="large" />
-                                            </Avatar>
-                                            <Box sx={{ flexGrow: 1 }}>
-                                                <Typography variant="h6" fontWeight="bold" color="#1e293b">{matiere.nom}</Typography>
-                                            </Box>
-                                        </Box>
-
-                                        <Typography variant="body2" color="#64748b" sx={{ mb: 3, minHeight: 40, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                            {matiere.description || 'Aucune description.'}
-                                        </Typography>
-
-                                        <Button
-                                            fullWidth
-                                            variant="outlined"
-                                            onClick={() => navigate(`/dashboard/matiere/${matiere.id}/cours`)}
-                                            sx={{
-                                                borderRadius: 3,
-                                                textTransform: 'none',
-                                                color,
-                                                borderColor: `${color}44`,
-                                                '&:hover': { bgcolor: `${color}05`, borderColor: color }
-                                            }}
-                                        >
-                                            Gérer la matière
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        </Fade>
-                    );
-                })}
-
-                <Grid item xs={12} sm={6} lg={4}>
-                    <CardActionArea
-                        onClick={() => navigate('/dashboard/matieres/create')}
-                        sx={{ height: '100%', borderRadius: 4 }}
-                    >
-                        <Paper elevation={0} sx={{
-                            height: '100%',
-                            borderRadius: 4,
-                            border: '2px dashed #e2e8f0',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            p: 4,
-                            color: '#94a3b8',
-                            bgcolor: 'transparent',
-                            '&:hover': { bgcolor: '#f1f5f9', borderColor: '#7c3aed', color: '#7c3aed' }
-                        }}>
-                            <AddIcon sx={{ fontSize: 40, mb: 1 }} />
-                            <Typography fontWeight="bold">Ajouter une matière</Typography>
-                        </Paper>
-                    </CardActionArea>
-                </Grid>
+                <Button fullWidth variant="outlined" onClick={() => navigate(`/dashboard/matiere/${m.id}/cours`)}
+                  sx={{ textTransform: 'none', borderRadius: 2, color: '#7c3aed', borderColor: '#c4b5fd' }}>
+                  Gérer le contenu
+                </Button>
+              </Paper>
             </Grid>
-        </Box>
-    );
+          ))}
+        </Grid>
+      )}
+    </Box>
+  );
 }

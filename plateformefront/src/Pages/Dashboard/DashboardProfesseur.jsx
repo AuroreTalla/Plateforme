@@ -1,80 +1,60 @@
-import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, CardActionArea, Avatar, Grid, Chip } from '@mui/material';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import ForumIcon from '@mui/icons-material/Forum';
-import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 import { useState, useEffect } from 'react';
+import { Box, Typography, Grid } from '@mui/material';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import DescriptionIcon from '@mui/icons-material/Description';
+import SchoolIcon from '@mui/icons-material/School';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
 import { compterPublicationsNonResolues } from '../../Services/MatiereService.js';
+import DashboardBanner from '../../Composants/Dashboard/DashboardBanner';
+import StatCard from '../../Composants/Dashboard/StatCard';
+import MatiereRow from '../../Composants/Dashboard/MatiereRow';
 
 export default function DashboardProfesseur({ currentUser, showHeader = true }) {
-  const navigate = useNavigate();
   const { matieres, loading } = useMatieres();
-  const [nonResolues, setNonResolues] = useState({});
+  const [nonResolues, setNonResolues] = useState(undefined);
 
   useEffect(() => {
-  compterPublicationsNonResolues()
-    .then((res) => setNonResolues(res.data))
-    .catch(() => {});
-}, []);
+    compterPublicationsNonResolues()
+      .then((res) => setNonResolues(res.data))
+      .catch(() => setNonResolues({}));
+  }, []);
+
+  const totalCours = matieres.reduce((s, m) => s + m.nbCours, 0);
+  const totalExos = matieres.reduce((s, m) => s + m.nbExercices, 0);
+  const totalAttente = nonResolues
+    ? Object.values(nonResolues).reduce((s, n) => s + n, 0) : undefined;
 
   return (
     <Box sx={{ maxWidth: 1200, mx: showHeader ? 'auto' : 0 }}>
       {showHeader && (
-        <>
-          <Typography variant="h4" fontWeight="bold" sx={{ color: '#4c1d95', mb: 1 }}>
-            Bonjour {currentUser.name} 👋
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 4 }}>
-            Gérez vos matières et suivez les échanges dans vos forums.
-          </Typography>
-        </>
+        <DashboardBanner
+          titre={`Bonjour ${currentUser.name} 👋`}
+          sous="Gérez vos matières et suivez les échanges de vos forums." />
       )}
 
-      {!loading && (
-        <Grid container spacing={3}>
-          {matieres.map((m) => (
-            <Grid item xs={12} sm={6} md={4} key={m.id}>
-              <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Avatar sx={{ bgcolor: '#ede9fe', color: '#7c3aed' }}>
-                      <MenuBookIcon />
-                    </Avatar>
-                    <Typography variant="subtitle1" fontWeight="bold">{m.nom}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-  {m.nbCours} cours · {m.nbExercices} exercices
-</Typography>
-{nonResolues[m.groupeId] > 0 && (
-  <Chip
-    label={`${nonResolues[m.groupeId]} question(s) en attente`}
-    size="small"
-    sx={{ mt: 1, bgcolor: '#ffedd5', color: '#9a3412', fontWeight: 600 }}
-  />
-)}
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <CardActionArea
-                      onClick={() => navigate(`/dashboard/matiere/${m.id}/cours`)}
-                      sx={{ borderRadius: 2, p: 1, border: '1px solid #e2e8f0', flex: 1, textAlign: 'center' }}
-                    >
-                      <Typography variant="body2" fontWeight="600">Cours</Typography>
-                    </CardActionArea>
-                    <CardActionArea
-                      onClick={() => navigate(`/dashboard/forum/${m.groupeId}`)}
-                      sx={{ borderRadius: 2, p: 1, border: '1px solid #e2e8f0', flex: 1, textAlign: 'center' }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                        <ForumIcon fontSize="small" />
-                        <Typography variant="body2" fontWeight="600">Forum</Typography>
-                      </Box>
-                    </CardActionArea>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>Aperçu</Typography>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard label="Matières" value={loading ? undefined : matieres.length} icon={SchoolIcon} bg="#7c3aed" />
         </Grid>
-      )}
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard label="Cours" value={loading ? undefined : totalCours} icon={MenuBookIcon} bg="#a78bfa" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard label="Exercices" value={loading ? undefined : totalExos} icon={DescriptionIcon} bg="#4c1d95" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard label="Questions en attente" value={totalAttente} icon={HelpOutlineIcon} bg="#ddd6fe" color="#4c1d95" />
+        </Grid>
+      </Grid>
+
+      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>Mes matières</Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {matieres.map((m) => (
+          <MatiereRow key={m.id} matiere={m} enAttente={nonResolues?.[m.groupeId] ?? 0} />
+        ))}
+      </Box>
     </Box>
   );
 }
