@@ -135,4 +135,10 @@ public Users modifierProfil(Users currentUser, String nom) {
     }
     return usersRepository.save(currentUser);
 }
+
+@Transactional
+public Users modifierPreferenceRecommandations(Users user, boolean actif) {
+    user.setRecommandationsActives(actif);
+    return usersRepository.save(user);
+}
 }

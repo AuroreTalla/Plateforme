@@ -57,6 +57,9 @@ public class Users implements UserDetails {
         this.lastSeen = LocalDateTime.now();
     }
 
+    @Column(name = "recommandations_actives", nullable = false)
+    private boolean recommandationsActives = true;
+
     @ManyToMany
     @JoinTable(
             name = "groupe_users",

@@ -12,6 +12,7 @@ public record UserDTO(
         boolean demandeProfesseur,
         LocalDateTime dateInscription,
         boolean emailVerifie,
+        boolean recommandationsActives,
         LocalDateTime lastSeen
 ) {
     public static UserDTO fromEntity(Users user) {
@@ -22,6 +23,7 @@ public record UserDTO(
                 .statut(user.getStatut())
                 .dateInscription(user.getDateInscription())
                 .emailVerifie(user.isEmailVerifie())
+                .recommandationsActives(user.isRecommandationsActives())
                 .lastSeen(user.getLastSeen())
                 .build();
     }

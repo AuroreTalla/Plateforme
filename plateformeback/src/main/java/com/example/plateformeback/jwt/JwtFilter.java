@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
 
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 
@@ -63,7 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
             Users user = usersService.getUserByEmail(email);
 
             String hashedToken = sha256Hex(token);
-            Optional<Jwt> jwtOpt = jwtRepository.findByValeurAndDesactive(hashedToken, false);
+            List<Jwt> jwtOpt = jwtRepository.findByValeurAndDesactive(hashedToken, false);
 
             if (jwtOpt.isEmpty()) {
                 log.warn("❌ Token révoqué ou invalide pour {}", email);

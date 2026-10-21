@@ -34,7 +34,7 @@ public class JwtCookieService {
     }
 
     public void addTokenCookies(HttpServletResponse response, Map<String, String> tokens) {
-        addCookie(response, JwtService.BEARER, tokens.get(JwtService.BEARER), 30 * 60);
+        addCookie(response, JwtService.BEARER, tokens.get(JwtService.BEARER),  30 * 60);
         addCookie(response, JwtService.REFRESH, tokens.get(JwtService.REFRESH), 7 * 24 * 60 * 60);
     }
 

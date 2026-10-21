@@ -1,4 +1,4 @@
-package com.example.plateforme;
+package com.example.plateformeback;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -6,7 +6,7 @@ import { getReponsesByPublication, proposerSolution, validerSolution, devaliderS
 import { subscribeToReponses, sendReponse } from '../../Services/WebSocketConfig';
 import { formatDate } from '../../Services/FormatDate';
 import { useRole } from '../../hooks/useRole';
-
+import { useTrackConsultation } from '../../hooks/useTrackConsultation';
 import ReponseForm from './ReponseForm';
 
 function PublicationDetail({ publication, onBack, currentUser }) {
@@ -17,6 +17,7 @@ function PublicationDetail({ publication, onBack, currentUser }) {
 
   const { isProfOuAdmin: isAdmin } = useRole();
 const isAuteur = currentUser?.id === publication.user?.id;
+useTrackConsultation('PUBLICATION', publication.id);
 
   useEffect(() => {
     let mounted = true;

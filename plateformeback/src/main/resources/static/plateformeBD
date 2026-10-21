@@ -11,6 +11,7 @@ CREATE TABLE users (
     statut ENUM('ELEVE', 'PROFESSEUR', 'ADMIN') DEFAULT 'ELEVE',
     email_verifie TINYINT(1) DEFAULT 0,
     date_inscription DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    recommandations_actives BOOLEAN NOT NULL DEFAULT TRUE,
     lastseen DATETIME(6)
 ) ENGINE=InnoDB;
 
@@ -180,3 +181,18 @@ CREATE TABLE feedback (
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_feedback_user ON feedback(user_id);
+
+CREATE TABLE consultation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NULL,
+    type_ressource ENUM('COURS', 'EXERCICE', 'PUBLICATION') NOT NULL,
+    ressource_id BIGINT NOT NULL,
+    matiere_id BIGINT NULL,
+    date_consultation DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    source ENUM('REEL', 'SIMULATION') NOT NULL DEFAULT 'REEL',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_consultation_ressource ON consultation(type_ressource, ressource_id);
+CREATE INDEX idx_consultation_user_date ON consultation(user_id, date_consultation);
+CREATE INDEX idx_consultation_matiere ON consultation(matiere_id);

@@ -6,6 +6,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,11 +88,10 @@ public class JwtService {
             throw new RuntimeException("Refresh token expiré ou révoqué");
         }
 
-        jwtRepository.findByRefreshTokenValeur(hashedRefresh)
-                .ifPresent(oldJwt -> {
-                    oldJwt.setDesactive(true);
-                    jwtRepository.save(oldJwt);
-                });
+        jwtRepository.findAllByRefreshTokenValeur(hashedRefresh).forEach(j -> {
+            j.setDesactive(true);
+            jwtRepository.save(j);
+        });
 
         Users user = refreshToken.getUsers();
         String newAccessToken = buildToken(new HashMap<>(), user, jwtExpirationMs);
@@ -141,6 +141,12 @@ public class JwtService {
         } catch (ExpiredJwtException e) {
             return true;
         }
+    }
+
+    @Scheduled(fixedRate = 3_600_000)
+    @Transactional
+    public void nettoyerJwtDesactives() {
+        jwtRepository.deleteAllByDesactive(true);
     }
 
     public String extractUsername(String token) {

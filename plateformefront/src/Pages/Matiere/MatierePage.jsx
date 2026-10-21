@@ -20,11 +20,8 @@ import {
   supprimerCours,
   supprimerExercice,
   buildMediaUrl,
-} from '../../Services/MatiereService.js';
+} from '../../ConfigBackEnd/MatiereService';
 import AjoutContenuForm from './AjoutContenuForm';
-import { useMatieres } from '../../Composants/Matiere/MatiereProvider.jsx';
-import { useRole } from '../../hooks/useRole';
-
 
 const typeIcons = {
   TEXTE: ArticleIcon,
@@ -38,8 +35,10 @@ const typeIcons = {
 function MatierePage({ defaultTab = 'cours' }) {
   const { matiereId, tab } = useParams();
   const active = tab || defaultTab;
+  const { currentUser } = useContext(AuthContext);
 
-  const { isProfOuAdmin: peutModifier } = useRole();
+  const peutModifier = currentUser?.statut === 'ADMIN' || currentUser?.statut === 'PROFESSEUR';
+
   const [matiere, setMatiere] = useState(null);
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -71,14 +70,11 @@ function MatierePage({ defaultTab = 'cours' }) {
     load();
   }, [load]);
 
-  const { refetch: refetchMatieres } = useMatieres();
-
   const handleAjout = async ({ titre, type, contenu, mediaUrl }) => {
     const ajouter = active === 'cours' ? ajouterCours : ajouterExercice;
     await ajouter(matiereId, titre, type, contenu, mediaUrl);
     setShowForm(false);
     await load();
-    await refetchMatieres();
   };
 
   const handleSupprimer = async (id) => {
@@ -87,7 +83,6 @@ function MatierePage({ defaultTab = 'cours' }) {
       const supprimer = active === 'cours' ? supprimerCours : supprimerExercice;
       await supprimer(id);
       await load();
-      await refetchMatieres();
     } catch (e) {
       console.error('❌ Erreur suppression contenu :', e);
     }

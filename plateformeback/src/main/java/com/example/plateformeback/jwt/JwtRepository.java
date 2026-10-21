@@ -5,17 +5,18 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.List;
 
 @Repository
 public interface JwtRepository extends CrudRepository<Jwt, Long> {  // ✅ Integer → Long
 
-    Optional<Jwt> findByValeurAndDesactive(String valeur, boolean desactive);
+    List<Jwt> findByValeurAndDesactive(String valeur, boolean desactive);
 
     Optional<Jwt> findByUsersEmailAndDesactive(String email, boolean desactive);
 
     Stream<Jwt> findByUsersEmail(String email);
 
-    Optional<Jwt> findByRefreshTokenValeur(String valeur);
+    List<Jwt> findAllByRefreshTokenValeur(String valeur);
 
     void deleteAllByDesactive(boolean desactive);
 }

@@ -4,23 +4,45 @@ export const API_BASE_URL = "http://localhost:8081";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // ✅ Envoie les cookies automatiquement
+  withCredentials: true,
   timeout: 10000,
 });
 
-// ✅ Intercepteur de réponse SANS auto-refresh
+// Ces routes ne doivent jamais déclencher de refresh (évite les boucles)
+const SANS_REFRESH = ["/users/refresh-token", "/users/connexion", "/users/deconnexion"];
+
+// Une seule requête de refresh à la fois, partagée par tous les appels en échec
+let refreshEnCours = null;
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // ❌ NE PAS essayer de refresh automatiquement
-    // Si 401, laisser l'erreur se propager
-    if (error.response?.status === 401) {
-      console.log("❌ 401 - Non authentifié");
-      // Rediriger SEULEMENT si pas déjà sur la page de login
-      if (!window.location.pathname.includes('/connexion')) {
-        window.location.href = "/connexion";
-      }
+  async (error) => {
+    const original = error.config;
+    const status = error.response?.status;
+    const url = original?.url || "";
+
+    if (
+      status !== 401 ||
+      !original ||
+      original._retry ||
+      SANS_REFRESH.some((u) => url.includes(u))
+    ) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    original._retry = true;
+
+    try {
+      if (!refreshEnCours) {
+        refreshEnCours = api
+          .post("/users/refresh-token")
+          .finally(() => { refreshEnCours = null; });
+      }
+      await refreshEnCours;
+      return api(original);               // rejoue la requête initiale
+    } catch {
+      window.dispatchEvent(new Event("auth:expired"));
+      return Promise.reject(error);
+    }
   }
 );
