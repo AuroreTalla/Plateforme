@@ -27,6 +27,9 @@ public class NotificationService {
     @Value("${brevo.sender.name:PrepAs Concours}")
     private String senderName;
 
+    @Value("${app.mail.provider:mailhog}")
+    private String mailProvider;
+
     private final JavaMailSender mailSender;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -44,30 +47,17 @@ public class NotificationService {
      * En production -> Brevo
      */
     private void envoyerEmail(String destinataire, String sujet, String contenu) {
-
-        String profil = System.getProperty("spring.profiles.active", "");
-
-        try {
-
-            if ("local".equals(profil)) {
-                envoyerViaMailHog(destinataire, sujet, contenu);
-            } else {
-                envoyerViaBrevo(destinataire, sujet, contenu);
-            }
-
-        } catch (Exception e) {
-            log.error(
-                    "Erreur envoi email à {} : {}",
-                    destinataire,
-                    e.getMessage()
-            );
-
-            throw new RuntimeException(
-                    "Impossible d'envoyer l'email",
-                    e
-            );
+    try {
+        if ("brevo".equals(mailProvider)) {
+            envoyerViaBrevo(destinataire, sujet, contenu);
+        } else {
+            envoyerViaMailHog(destinataire, sujet, contenu);
         }
+    } catch (Exception e) {
+        log.error("Erreur envoi email à {} : {}", destinataire, e.getMessage());
+        throw new RuntimeException("Impossible d'envoyer l'email", e);
     }
+}
 
     /**
      * Envoi local via MailHog.
