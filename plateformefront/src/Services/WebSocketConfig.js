@@ -1,6 +1,10 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
+import { API_BASE_URL } from "./Api";
+
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || API_BASE_URL;
+
 let stompClient = null;
 
 /*CONNEXION WEBSOCKET*/
@@ -16,7 +20,7 @@ export const connectWebSocket = (onConnected, onError) => {
 
     // Une nouvelle connexion SockJS pour chaque tentative
     webSocketFactory: () => {
-      return new SockJS('http://localhost:8081/ws');
+      return new SockJS(`${WS_BASE_URL}/ws`);
     },
 
     reconnectDelay: 5000,

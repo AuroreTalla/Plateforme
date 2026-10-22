@@ -67,6 +67,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const [slow, setSlow] = useState(false);
+
+useEffect(() => {
+  if (!loading) { setSlow(false); return; }
+  const t = setTimeout(() => setSlow(true), 4000);
+  return () => clearTimeout(t);
+}, [loading]);
+
+useEffect(() => {
+  const onExpired = () => setCurrentUser(null);
+  window.addEventListener("auth:expired", onExpired);
+  return () => window.removeEventListener("auth:expired", onExpired);
+}, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -79,7 +93,18 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser,
       }}
     >
-      {loading ? <LoadingPage /> : children}
+      {loading ? (
+  slow ? (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 12, textAlign: 'center', padding: 24 }}>
+      <LoadingPage />
+      <p style={{ color: '#4c1d95', fontWeight: 600 }}>Le serveur démarre, merci de patienter…</p>
+      <p style={{ color: '#64748b', maxWidth: 360 }}>
+        La première visite après une période d'inactivité peut prendre jusqu'à une minute.
+      </p>
+    </div>
+  ) : <LoadingPage />
+) : children}
     </AuthContext.Provider>
   );
 };

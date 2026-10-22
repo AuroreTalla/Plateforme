@@ -64,6 +64,7 @@ public class ConfigurationApp {
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/app/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -98,8 +99,7 @@ public class ConfigurationApp {
             allowedOrigins.add(frontendUrl);
         }
         
-        configuration.setAllowedOrigins(allowedOrigins);
-        
+        configuration.setAllowedOrigins(allowedOrigins);        
         // ✅ Méthodes HTTP autorisées
         configuration.setAllowedMethods(List.of(
             "GET", 
